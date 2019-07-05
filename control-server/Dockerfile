@@ -22,8 +22,6 @@ COPY --from=builder /go/bin/server /go/bin/server
 
 USER appuser
 
-ARG gin_mode=release
-ENV GIN_MODE=$gin_mode
 ENV PORT=8080
 EXPOSE 8080
 
