@@ -22,5 +22,10 @@ COPY --from=builder /go/bin/server /go/bin/server
 
 USER appuser
 
+ARG gin_mode=release
+ENV GIN_MODE=$gin_mode
+ARG default_port=8080
+ENV PORT=$default_port
+EXPOSE $PORT
 
 ENTRYPOINT ["/go/bin/server"]
