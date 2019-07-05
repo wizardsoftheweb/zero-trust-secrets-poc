@@ -129,4 +129,20 @@ $ exa
 
 ## Using the Client
 
+Let's start by pulling the entry I made creating etcd.
+```shell-session
+$ ENDPOINT=$(systemctl status etcd | grep -Eo 'http://localhost:[0-9]+' | uniq)
+$ crypt get -backend=etcd \
+            -endpoint=$ENDPOINT \
+            -secret-keyring=./rsa.gpg \
+            /my/first/key
+```
+### That's a Nope
 
+Turns out generating the keys the way I did doesn't work with crypt. I think. I'm currently at a loss because [the way they did it](https://github.com/xordataexchange/crypt#create-a-key-and-keyring-from-a-batch-file) to set up the project (mind you, that was like five years ago) has [been no-oped](https://www.gnupg.org/documentation/manuals/gnupg/Unattended-GPG-key-generation.html) out of the batch files.
+
+I did get something to either work or break. I'm not sure what yet. If I can't figure it out quickly enough I'll go to my fallback which involves more k8s heavy lifting that I was hoping for.
+
+### The Backends
+
+The library crypt relies on for etcd has been deprecated [for some time](https://github.com/coreos/go-etcd).

@@ -1,3 +1,0 @@
-[submodule "crypt"]
-	path = crypt-submodule
-	url = https://github.com/xordataexchange/crypt.git
