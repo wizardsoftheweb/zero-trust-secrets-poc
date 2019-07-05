@@ -33,3 +33,6 @@ I've also got a stretch goal if I find the time. This is something that could be
 * [`terraform-provider-vagrant`](https://github.com/bmatcuk/terraform-provider-vagrant): why the hell not
 * [HTTP backend](https://www.terraform.io/docs/backends/types/http.html): TF can't and won't encrypt the backend for you; a loopback webservice that encrypts on its way out might do the trick
 
+### Full PoC Run Through
+
+It's being written [here](./docs/poc/README.md).
