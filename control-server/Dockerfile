@@ -24,8 +24,7 @@ USER appuser
 
 ARG gin_mode=release
 ENV GIN_MODE=$gin_mode
-ARG default_port=8080
-ENV PORT=$default_port
-EXPOSE $PORT
+ENV PORT=8080
+EXPOSE 8080
 
 ENTRYPOINT ["/go/bin/server"]
