@@ -28,4 +28,6 @@ Stretch goal is [messaging in proto3](https://developers.google.com/protocol-buf
 
 Every time I spend a few years away from serious crypto topics, the first project I do that even remotely touches crypto seems to fall into a pretty major trap. For example, I often forget that assymmetric encryption doesn't mean that two parties have two disparate secrets and trade messages with zero trust. They actually have to trade keys. During the course of writing this spec, I realized that I'm treading dangerously close to sugggesting I can implement some sort of homomorphic encryption architecture. That's what was in my head, anyway, until reality kicked in and I remembered mixing a bunch of paint just [turns everything brown](https://security.stackexchange.com/a/60659). This is not a solution for that. I'm not smart enough to even tackle the edge cases there. But if some else wants to build me a library I'd happily use it to further this goal!
 
- 
+## Containerizing
+
+Because this is an MVP, I decided to forgo setting up a proper pipeline. I'm just using some image [some person published on GitHub](https://github.com/chemidy/smallest-secured-golang-docker-image). That means fix that before you call this a production solution.

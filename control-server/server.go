@@ -1,4 +1,4 @@
-package control_server
+package main
 
 import "github.com/gin-gonic/gin"
 
