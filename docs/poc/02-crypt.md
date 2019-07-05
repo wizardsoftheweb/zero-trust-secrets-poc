@@ -145,4 +145,11 @@ I did get something to either work or break. I'm not sure what yet. If I can't f
 
 ### The Backends
 
-The library crypt relies on for etcd has been deprecated [for some time](https://github.com/coreos/go-etcd).
+The library crypt relies on for etcd has been deprecated [for some time](https://github.com/coreos/go-etcd). It's not a great situation to be in but it's not bad either. The codebase is small enough that it would be quick to patch.
+
+The CLI does connect without encryption, so that's a start!
+
+```shell-session
+$ crypt get -plaintext -endpoint="http://127.0.0.1:2379" /my/first/key
+my-first-value
+```
