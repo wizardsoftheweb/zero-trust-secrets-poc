@@ -6,6 +6,8 @@ The goal of this project is to combine a bunch of really neat stuff into a broke
 
 Humans are the worst part of any security system. Bad decisions are by even the most intelligent people. No security is perfect.
 
+At this stage in the project I'm completely ignoring normal authentication and flow security. I assume production services should have that already. In other words, this isn't yet a production service and you shouldn't treat it as one.
+
 ## PoC Onboarding
 
 I'd going to attempt to tie these things together into something resembling a zero trust configuration service. That is, no secrets are stored unencrypted, no secrets are passed unencrypted, secrets are generated automatically per environment with an audit trail of access, and, most importantly, the end user most likely never sees the secrets. Those are my goals, at least.
