@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: control-server
+  name: simple-client0
   namespace: zts-poc
 spec:
   type: NodePort
   ports:
-    - name: http
-      port: 8080
+    - name: simple-client0-port
+      port: 4747
       protocol: TCP
-      targetPort: 8080
+      targetPort: 4747
   selector:
-    app: control-server
+    app: simple-client0

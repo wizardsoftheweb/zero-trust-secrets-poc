@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,17 +19,12 @@ import (
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
-const (
-	clientPort  = 4747
-	secretCount = 10
-	secretsKey  = "/simple-client/secrets.json"
-)
-
 var (
 	controlServerUrl = os.Getenv("RANDO_ENDPOINT")
-	etcdHosts        = []string{
-		"http://127.0.0.1:2379/",
-	}
+	secretsKey       = os.Getenv("SECRETS_KEY")
+	secretCount, _   = strconv.Atoi(os.Getenv("SECRETS_COUNT"))
+	clientPort, _    = strconv.Atoi(os.Getenv("PORT"))
+	etcdHosts        = strings.Split(os.Getenv("ETCD_HOSTS"), ",")
 )
 
 type Config struct {

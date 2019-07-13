@@ -35,5 +35,8 @@ WORKDIR     /appuser
 ENV         PORT=4747
 EXPOSE      $PORT
 ENV         RANDO_ENDPOINT ''
+ENV         SECRETS_KEY '/simple-client/secrets.json'
+ENV         SECRETS_COUNT 10
+ENV         ETCD_HOSTS 'http://etcd0:2379/'
 
 ENTRYPOINT ["/appuser/server"]

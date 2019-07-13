@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: simple-client0
+  name: simple-client
+  namespace: zts-poc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-client0
+  template:
+    metadata:
+      labels:
+        app: simple-client0
+    spec:
+      containers:
+        - image: localhost:5000/simple-client:1.1.0
+          name: simple-client
+          env:
+            - name: PORT
+              value: '4747'
+            - name: RANDO_ENDPOINT
+              value: 'http://control-server.zts-poc.svc:8080/rando'
+            - name: SECRETS_COUNT
+              value: '10'
+            - name: SECRETS_KEY
+              value: '/simple-client0/secrets.json'
+            - name: ETCD_HOSTS
+              value: 'http://etcd0.zts-poc.svc:2379/'
+          ports:
+            - containerPort: 4747
+              name: http
+              protocol: TCP
+      restartPolicy: Always
