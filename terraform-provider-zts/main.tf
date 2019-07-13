@@ -6,3 +6,7 @@ resource "zts_secrets" "test" {
   etcd_host = "http://127.0.0.1:2379/"
   etcd_key  = "/test-client/secrets.json"
 }
+
+output "random_secrets" {
+  value = "${zts_secrets.test.random_secrets}"
+}

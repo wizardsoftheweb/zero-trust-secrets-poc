@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
+	goetcd "github.com/coreos/etcd/client"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -28,11 +31,13 @@ func resourceSecrets() *schema.Resource {
 			"etcd_host": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The etcd server to store config",
 			},
 			"etcd_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The path in etcd to store the file",
 			},
 			"secret_count": &schema.Schema{
@@ -61,6 +66,14 @@ func resourceSecrets() *schema.Resource {
 				},
 				ValidateFunc: func(i interface{}, s string) (strings []string, errors []error) {
 					return validateFileObject(false, i, s)
+				},
+			},
+			"random_secrets": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The generated secrets",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 		},
@@ -93,7 +106,7 @@ func resourceSecretsCreate(d *schema.ResourceData, m interface{}) error {
 		providerResources.ControlServer,
 		request,
 	)
-
+	_ = d.Set("random_secrets", contents)
 	d.SetId(
 		fmt.Sprintf(
 			"%x",
@@ -106,21 +119,63 @@ func resourceSecretsCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSecretsRead(d *schema.ResourceData, m interface{}) error {
+	var etcdHost, etcdKey, secretKey string
+	if d.HasChange("etcd_host") {
+		old, _ := d.GetChange("etcd_host")
+		etcdHost = old.(string)
+	} else {
+		etcdHost = d.Get("etcd_host").(string)
+	}
+	if d.HasChange("etcd_key") {
+		old, _ := d.GetChange("etcd_key")
+		etcdKey = old.(string)
+	} else {
+		etcdKey = d.Get("etcd_key").(string)
+	}
+	if d.HasChange("secret_key") {
+		old, _ := d.GetChange("secret_key")
+		secretKey = old.(string)
+	} else {
+		secretKey = d.Get("secret_key").(string)
+	}
 	configManager := *newConfigManager(
 		[]string{
-			d.Get("etcd_host").(string),
+			etcdHost,
 		},
-		d.Get("secret_key").(string),
+		secretKey,
 	)
-	contents, err := configManager.Get(d.Get("etcd_key").(string))
+	contents, err := configManager.Get(etcdKey)
+	if nil != err {
+		return err
+	}
+	var parsedContents RandoResponse
+	err = json.Unmarshal(contents, &parsedContents)
+	if nil != err {
+		return err
+	}
 	log.Println(string(contents))
+	err = d.Set("random_secrets", parsedContents.Secrets)
 	return err
 }
 
 func resourceSecretsUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceSecretsRead(d, m)
+	return resourceSecretsCreate(d, m)
 }
 
 func resourceSecretsDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	client, err := goetcd.New(goetcd.Config{
+		Endpoints: []string{
+			d.Get("etcd_host").(string),
+		},
+	})
+	if nil != err {
+		return err
+	}
+	keysApi := goetcd.NewKeysAPI(client)
+	_, err = keysApi.Delete(
+		context.TODO(),
+		d.Get("etcd_key").(string),
+		&goetcd.DeleteOptions{},
+	)
+	return err
 }
