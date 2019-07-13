@@ -22,16 +22,16 @@ spec:
       initContainers:
         - name: wait-for-control-server
           image: busybox
-          command: ["/bin/sh", "-c", "while (wget -q -O - http://control-server:8080/ping | awk '/pong/{ exit(1) }'); do sleep 5; done"]
+          command: ["/bin/sh", "-c", "while (wget -q -O - http://control-server:{{ $rootScope.Values.simpleClient.port }}/ping | awk '/pong/{ exit(1) }'); do sleep 5; done"]
       containers:
         - image: wizardsoftheweb/zts-poc:simple-client
           imagePullPolicy: Always
           name: simple-client
           env:
             - name: PORT
-              value: '4747'
+              value: {{ $rootScope.Values.simpleClient.port }}
             - name: RANDO_ENDPOINT
-              value: 'http://control-server.zts-poc.svc:8080/rando'
+              value: 'http://control-server.zts-poc.svc:{{ $rootScope.Values.controlServer.port }}/rando'
             - name: SECRETS_COUNT
               value: '10'
             - name: SECRETS_KEY
@@ -44,7 +44,7 @@ spec:
                 {{- end -}}
               {{- end}}"
           ports:
-            - containerPort: 4747
+            - containerPort: {{ $rootScope.Values.simpleClient.port }}
               name: http
               protocol: TCP
 {{ end }}

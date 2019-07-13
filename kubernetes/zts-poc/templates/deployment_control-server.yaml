@@ -26,7 +26,7 @@ spec:
           imagePullPolicy: Always
           name: control-server
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.simpleClient.port }}
               name: http
               protocol: TCP
       restartPolicy: Always

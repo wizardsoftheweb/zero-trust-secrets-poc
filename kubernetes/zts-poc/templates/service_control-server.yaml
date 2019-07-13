@@ -10,8 +10,8 @@ spec:
   type: NodePort
   ports:
     - name: http
-      port: 8080
+      port: {{ .Values.controlServer.port }}
       protocol: TCP
-      targetPort: 8080
+      targetPort: {{ .Values.controlServer.port }}
   selector:
     app: control-server

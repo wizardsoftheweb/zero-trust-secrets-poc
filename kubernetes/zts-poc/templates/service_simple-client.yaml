@@ -12,9 +12,9 @@ spec:
   type: NodePort
   ports:
     - name: simple-client{{ $index }}-port
-      port: 4747
+      port: {{ $rootScope.Values.simpleClient.port }}
       protocol: TCP
-      targetPort: 4747
+      targetPort: {{ $rootScope.Values.simpleClient.port }}
   selector:
     app: simple-client{{ $index }}
 {{ end }}
