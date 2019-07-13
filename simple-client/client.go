@@ -101,12 +101,18 @@ func BootstrapViper(directory string) {
 		GetKeyFileName(directory, GpgKeyTypeSecret),
 	)
 	if nil != err {
+		log.Println(err.Error())
 		log.Fatal(err)
 	}
 	viper.SetConfigType("json")
 	err = viper.ReadRemoteConfig()
 	if nil != err {
-		log.Fatal(err)
+		if viper.RemoteConfigError("No Files Found") == err {
+			GenerateSecrets(directory)
+			_ = viper.ReadRemoteConfig()
+		} else {
+			log.Fatal(err)
+		}
 	}
 	secrets := viper.GetStringSlice("secrets")
 	if 0 == len(secrets) {
