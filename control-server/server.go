@@ -17,8 +17,9 @@ func main() {
 	})
 
 	r.GET("/rando", func(c *gin.Context) {
+		response, _ := GenerateRandomString(47)
 		c.JSON(200, gin.H{
-			"message": GenerateRandomString(47),
+			"message": response,
 		})
 	})
 	_ = r.Run() // listen and serve on 0.0.0.0:8080
