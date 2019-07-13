@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "zts-poc.fullname" . }}-test-connection"
+  labels:
+{{ include "zts-poc.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:  ['{{ include "zts-poc.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
