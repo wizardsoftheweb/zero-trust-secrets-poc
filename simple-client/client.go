@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
@@ -81,6 +82,17 @@ func GenerateSecrets(directory string) []string {
 	return parsedResponse.Secrets
 }
 
+func StartWatchingRemote(state *Config) {
+	for {
+		time.Sleep(time.Second * 30)
+		err := viper.WatchRemoteConfig()
+		if nil != err {
+			log.Printf("Unable to read secrets: %v", err)
+		}
+		state.secrets = viper.GetStringSlice("secrets")
+	}
+}
+
 func BootstrapViper(directory string) {
 	err := viper.AddSecureRemoteProvider(
 		"etcd",
@@ -110,6 +122,7 @@ func main() {
 	GlobalState := &Config{
 		secrets: viper.GetStringSlice("secrets"),
 	}
+	go StartWatchingRemote(GlobalState)
 	r := gin.Default()
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(r)
