@@ -23,7 +23,7 @@ var (
 	controlServerUrl = os.Getenv("RANDO_ENDPOINT")
 	secretsKey       = os.Getenv("SECRETS_KEY")
 	secretCount, _   = strconv.Atoi(os.Getenv("SECRETS_COUNT"))
-	clientPort       = os.Getenv("PORT")
+	clientPort, _    = strconv.Atoi(os.Getenv("PORT"))
 	etcdHosts        = strings.Split(os.Getenv("ETCD_HOSTS"), ",")
 )
 
