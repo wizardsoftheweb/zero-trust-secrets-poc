@@ -43,6 +43,10 @@ resource "zts_secrets" "test" {
   etcd_host = "http://127.0.0.1:2379/"
   etcd_key  = "/test-client/secrets.json"
 }
+
+output "random_secrets" {
+  value = "${zts_secrets.test.random_secrets}"
+}
 ```
 
 ```shell-session
@@ -219,4 +223,189 @@ Error:  100: Key not found (/test-client/secrets.json) [56]
 
 $ crypt get -endpoint='http://127.0.0.1:2379' /test-client/secrets.json | jq 
 100: Key not found (/test-client/secrets.json) [56]
+```
+
+### `zts_gpg_keys`
+
+This resource is probably super broken. I don't have a solid grasp on how to organize and streamline TF providers and ended up with a massive file. It works (until it doesn't) but it's far from pretty.
+
+The resource provides another way to generate GPG keys locally. tbh I don't see where it falls in what would be normal usage but it was an interesting experiment nonetheless. It requires a name, email, and comment. It assumes files should be built in the current working directory using the normal `crypt` names (`.{pub,sec}ring.gpg`) but all those things can be changed.
+
+```hcl-terraform
+resource "zts_gpg_keys" "sample" {
+  directory  = "~/example"            # Optional; default is cwd
+  pub_key    = "some-pub-basename"    # Optional; default is .pubring.gpg
+  secret_key = "some-secret-basename" # Optional; default is .secring.gpg
+  
+  batch {
+    name    = "CJ Harries"            # Required
+    email   = "cj@wotw.pro"           # Required
+    comment = "TF ZTS"                # Required
+  }
+}
+```
+
+#### `zts_gpg_keys` Example
+
+```hcl-terraform
+# ~/example/main.tf
+provider "zts" {
+  control_server = "localhost:8080"
+}
+
+resource "zts_gpg_keys" "test" {
+  batch {
+    name    = "CJ Harries"
+    email   = "cj@wotw.pro"
+    comment = "TF ZTS"
+  }
+}
+
+output "gpg_key_id" {
+  value = "${zts_gpg_keys.test.gpg_key_id}"
+}
+```
+
+```shell-session
+$ cd ~/example
+$ gpg2 --list-keys 'cj@wotw.pro'
+gpg: error reading key: No public key
+
+$ ls ./.*.gpg
+zsh: no matches found: ./.*.gpg
+
+$ terraform plan
+
+Refreshing Terraform state in-memory prior to plan...
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+
+
+------------------------------------------------------------------------
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # zts_gpg_keys.test will be created
+  + resource "zts_gpg_keys" "test" {
+      + computed_pub_key    = (known after apply)
+      + computed_secret_key = (known after apply)
+      + directory           = "~/example"
+      + gpg_key_id          = (known after apply)
+      + id                  = (known after apply)
+      + pub_key             = ".pubring.gpg"
+      + secret_key          = ".secring.gpg"
+
+      + batch {
+          + comment = "TF ZTS"
+          + email   = "cj@wotw.pro"
+          + name    = "CJ Harries"
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+------------------------------------------------------------------------
+
+Note: You didn't specify an "-out" parameter to save this plan, so Terraform
+can't guarantee that exactly these actions will be performed if
+"terraform apply" is subsequently run.
+
+$ terraform apply
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # zts_gpg_keys.test will be created
+  + resource "zts_gpg_keys" "test" {
+      + computed_pub_key    = (known after apply)
+      + computed_secret_key = (known after apply)
+      + directory           = "~/example"
+      + gpg_key_id          = (known after apply)
+      + id                  = (known after apply)
+      + pub_key             = ".pubring.gpg"
+      + secret_key          = ".secring.gpg"
+
+      + batch {
+          + comment = "TF ZTS"
+          + email   = "cj@wotw.pro"
+          + name    = "CJ Harries"
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+zts_gpg_keys.test: Creating...
+zts_gpg_keys.test: Creation complete after 1s [id=908CB26FEE8FD0AB4482F9367A511F6DDFA194B8]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+gpg_key_id = 908CB26FEE8FD0AB4482F9367A511F6DDFA194B8
+
+$ gpg2 --list-keys 'cj@wotw.pro'
+pub   rsa2048 2019-07-13 [SC]
+      908CB26FEE8FD0AB4482F9367A511F6DDFA194B8
+uid           [ultimate] CJ Harries (TF ZTS) <cj@wotw.pro>
+sub   rsa2048 2019-07-13 [E]
+
+$ ls ./.*.gpg
+./.pubring.gpg  ./.secring.gpg
+
+$ terraform destroy
+zts_gpg_keys.test: Refreshing state... [id=908CB26FEE8FD0AB4482F9367A511F6DDFA194B8]
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # zts_gpg_keys.test will be destroyed
+  - resource "zts_gpg_keys" "test" {
+      - computed_pub_key    = "~/example/.pubring.gpg" -> null
+      - computed_secret_key = "~/example/.secring.gpg" -> null
+      - directory           = "~/example" -> null
+      - gpg_key_id          = "908CB26FEE8FD0AB4482F9367A511F6DDFA194B8" -> null
+      - id                  = "908CB26FEE8FD0AB4482F9367A511F6DDFA194B8" -> null
+      - pub_key             = ".pubring.gpg" -> null
+      - secret_key          = ".secring.gpg" -> null
+
+      - batch {
+          - comment = "TF ZTS" -> null
+          - email   = "cj@wotw.pro" -> null
+          - name    = "CJ Harries" -> null
+        }
+    }
+
+Plan: 0 to add, 0 to change, 1 to destroy.
+
+Do you really want to destroy all resources?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes
+
+zts_gpg_keys.test: Destroying... [id=908CB26FEE8FD0AB4482F9367A511F6DDFA194B8]
+zts_gpg_keys.test: Destruction complete after 0s
+
+Destroy complete! Resources: 1 destroyed.
+
+$ gpg2 --list-keys 'cj@wotw.pro'
+gpg: error reading key: No public key
+
+$ ls ./.*.gpg
+zsh: no matches found: ./.*.gpg
 ```
