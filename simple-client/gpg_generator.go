@@ -106,7 +106,12 @@ func ExportKeyFiles(keyId string) {
 }
 
 func EnsureKeyFilesExist() {
-	EnsureKeyExists()
-	keyId := DetermineKeyId()
-	ExportKeyFiles(keyId)
+	cwd, _ := os.Getwd()
+	pubKeyFileName := fmt.Sprintf("%s/.pubring.gpg", cwd)
+	secretKeyFileName := fmt.Sprintf("%s/.secring.gpg", cwd)
+	if !FileExists(pubKeyFileName) || !FileExists(secretKeyFileName) {
+		EnsureKeyExists()
+		keyId := DetermineKeyId()
+		ExportKeyFiles(keyId)
+	}
 }
