@@ -123,5 +123,11 @@ func main() {
 			"secrets": GlobalState.secrets,
 		})
 	})
+	r.GET("/force-update", func(c *gin.Context) {
+		GenerateSecrets(cwd)
+		c.JSON(200, gin.H{
+			"message": "Secrets were regenerated",
+		})
+	})
 	_ = r.Run(fmt.Sprintf(":%d", clientPort))
 }
