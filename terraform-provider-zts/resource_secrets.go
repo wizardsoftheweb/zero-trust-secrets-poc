@@ -110,7 +110,7 @@ func resourceSecretsRead(d *schema.ResourceData, m interface{}) error {
 		[]string{
 			d.Get("etcd_host").(string),
 		},
-		d.Get("pub_key").(string),
+		d.Get("secret_key").(string),
 	)
 	contents, err := configManager.Get(d.Get("etcd_key").(string))
 	log.Println(string(contents))
