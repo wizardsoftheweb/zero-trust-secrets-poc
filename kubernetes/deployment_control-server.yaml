@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: control-server
+  name: control-server
+  namespace: zts-poc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: control-server
+  template:
+    metadata:
+      labels:
+        app: control-server
+    spec:
+      containers:
+        - image: localhost:5000/control-server:2.1.0
+          name: control-server
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+      restartPolicy: Always

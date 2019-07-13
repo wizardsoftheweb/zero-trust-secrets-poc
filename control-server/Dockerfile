@@ -12,7 +12,7 @@ COPY . .
 RUN go get -d -v
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -a -installsuffix cgo -o /go/bin/server .
 
-FROM scratch
+FROM alpine:3.10
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
@@ -20,9 +20,11 @@ COPY --from=builder /etc/passwd /etc/passwd
 # Copy our static executable
 COPY --from=builder /go/bin/server /go/bin/server
 
+RUN chown -R appuser /tmp
+
 USER appuser
 
 ENV PORT=8080
-EXPOSE 8080
+EXPOSE $PORT
 
 ENTRYPOINT ["/go/bin/server"]

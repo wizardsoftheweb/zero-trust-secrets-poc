@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: etcd
+    etcd_node: etcd0
+  name: etcd0
+  namespace: zts-poc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+      etcd_node: etcd0
+  template:
+    metadata:
+      labels:
+        app: etcd
+        etcd_node: etcd0
+    spec:
+      containers:
+        - command:
+            - /usr/local/bin/etcd
+            - --name
+            - etcd0
+            - --initial-advertise-peer-urls
+            - http://etcd0:2380
+            - --listen-peer-urls
+            - http://0.0.0.0:2380
+            - --listen-client-urls
+            - http://0.0.0.0:2379
+            - --advertise-client-urls
+            - http://etcd0:2379
+            - --initial-cluster
+            - etcd0=http://etcd0:2380
+            - --initial-cluster-state
+            - new
+          image: quay.io/coreos/etcd:latest
+          name: etcd0
+          ports:
+            - containerPort: 2379
+              name: client
+              protocol: TCP
+            - containerPort: 2380
+              name: server
+              protocol: TCP
+      restartPolicy: Always
