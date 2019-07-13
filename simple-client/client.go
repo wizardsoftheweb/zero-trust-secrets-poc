@@ -30,7 +30,8 @@ var etcdHosts = []string{
 }
 
 type Config struct {
-	secrets []string
+	directory string
+	secrets   []string
 }
 
 type RandoRequest struct {
@@ -87,7 +88,13 @@ func StartWatchingRemote(state *Config) {
 		time.Sleep(time.Second * 30)
 		err := viper.WatchRemoteConfig()
 		if nil != err {
-			log.Printf("Unable to read secrets: %v", err)
+			if viper.RemoteConfigError("No Files Found") == err {
+				GenerateSecrets(state.directory)
+				_ = viper.ReadRemoteConfig()
+			} else {
+				log.Println(err)
+				continue
+			}
 		}
 		state.secrets = viper.GetStringSlice("secrets")
 	}
@@ -126,7 +133,8 @@ func main() {
 	EnsureKeyFilesExist(cwd)
 	BootstrapViper(cwd)
 	GlobalState := &Config{
-		secrets: viper.GetStringSlice("secrets"),
+		directory: cwd,
+		secrets:   viper.GetStringSlice("secrets"),
 	}
 	go StartWatchingRemote(GlobalState)
 	r := gin.Default()
