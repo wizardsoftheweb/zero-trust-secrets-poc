@@ -10,9 +10,16 @@ import (
 
 const clientPort = 4747
 
+type Config struct {
+	secrets []string
+}
+
+var GlobalState *Config
+
 func main() {
 	cwd, _ := os.Getwd()
 	EnsureKeyFilesExist(cwd)
+	GlobalState = &Config{}
 	r := gin.Default()
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(r)
@@ -20,6 +27,6 @@ func main() {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
-	})
+	})g
 	_ = r.Run(fmt.Sprintf(":%d", clientPort))
 }
