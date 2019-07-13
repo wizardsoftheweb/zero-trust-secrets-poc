@@ -34,7 +34,6 @@ Name-Comment: Zero Trust Secrets
 Name-Email: cj@wotw.pro
 Expire-Date: 0
 %pubring .pubring.gpg
-%secring .secring.gpg
 %commit
 %echo done
 ```
