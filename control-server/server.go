@@ -29,7 +29,7 @@ func WriteGpgKeyToFile(gpgKey string) *os.File {
 	}
 	err = ioutil.WriteFile(
 		file.Name(),
-		[]byte(gpgKey),
+		[]byte(strings.ReplaceAll(gpgKey, "\\n", "\n")),
 		0666,
 	)
 	if nil != err {
@@ -52,7 +52,12 @@ func WriteValue(addresses []string, pubKey string, key string, value []string) {
 	if nil != err {
 		log.Fatal(err)
 	}
-	_ = configManager.Set(key, []byte(fmt.Sprintf(`{"secrets":["%s"]}`, strings.Join(value, `","`))))
+	secretsJson := fmt.Sprintf(`{"secrets":["%s"]}`, strings.Join(value, `","`))
+	fmt.Println(secretsJson)
+	err = configManager.Set(key, []byte(secretsJson))
+	if nil != err {
+		log.Fatal(err)
+	}
 }
 
 func main() {
