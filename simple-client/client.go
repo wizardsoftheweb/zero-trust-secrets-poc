@@ -1,5 +1,8 @@
 package main
 
+import "os"
+
 func main() {
-	EnsureKeyFilesExist()
+	cwd, _ := os.Getwd()
+	EnsureKeyFilesExist(cwd)
 }
