@@ -17,7 +17,7 @@ spec:
         app: control-server
     spec:
       containers:
-        - image: localhost:5000/control-server:latest
+        - image: localhost:5000/control-server:1.0.0
           name: control-server
           ports:
             - containerPort: 8080
