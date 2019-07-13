@@ -10,3 +10,16 @@ resource "zts_secrets" "test" {
 output "random_secrets" {
   value = "${zts_secrets.test.random_secrets}"
 }
+
+resource "zts_gpg_keys" "test" {
+  directory = "."
+  batch {
+    name    = "CJ Harries"
+    email   = "cj@wotw.pro"
+    comment = "TF ZTS"
+  }
+}
+
+output "gpg_key_id" {
+  value = "${zts_gpg_keys.test.gpg_key_id}"
+}
