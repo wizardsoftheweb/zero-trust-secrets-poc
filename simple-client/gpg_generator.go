@@ -71,7 +71,7 @@ func DetermineKeyId() string {
 }
 
 func ExportKeyFiles(directory string, keyId string) {
-	pubKeyFileName := fmt.Sprintf("%s/.pubring.gpg", directory)
+	pubKeyFileName := GetKeyFileName(directory, GpgKeyTypePub)
 	if !FileExists(pubKeyFileName) {
 		pubKeyCommand := []string{
 			"gpg2",
@@ -86,7 +86,7 @@ func ExportKeyFiles(directory string, keyId string) {
 			log.Fatal(pubKeyResponse.exitErr)
 		}
 	}
-	secretKeyFileName := fmt.Sprintf("%s/.secring.gpg", directory)
+	secretKeyFileName := GetKeyFileName(directory, GpgKeyTypeSecret)
 	if !FileExists(secretKeyFileName) {
 		secretKeyCommand := []string{
 			"gpg2",
@@ -103,9 +103,23 @@ func ExportKeyFiles(directory string, keyId string) {
 	}
 }
 
+type GpgKeyType int
+
+const (
+	GpgKeyTypePub GpgKeyType = iota
+	GpgKeyTypeSecret
+)
+
+func GetKeyFileName(directory string, keyType GpgKeyType) string {
+	if GpgKeyTypeSecret == keyType {
+		return fmt.Sprintf("%s/.secring.gpg", directory)
+	}
+	return fmt.Sprintf("%s/.pubring.gpg", directory)
+}
+
 func EnsureKeyFilesExist(directory string) {
-	pubKeyFileName := fmt.Sprintf("%s/.pubring.gpg", directory)
-	secretKeyFileName := fmt.Sprintf("%s/.secring.gpg", directory)
+	pubKeyFileName := GetKeyFileName(directory, GpgKeyTypePub)
+	secretKeyFileName := GetKeyFileName(directory, GpgKeyTypeSecret)
 	if !FileExists(pubKeyFileName) || !FileExists(secretKeyFileName) {
 		EnsureKeyExists()
 		keyId := DetermineKeyId()
