@@ -107,5 +107,5 @@ Assume I have a control server running at `localhost:8080` with an `etcd` endpoi
     ```
 ### Currently Missing
 
-* The control server does sign its values
+* The control server does not sign its values
 * The control server uses JSON not proto3
