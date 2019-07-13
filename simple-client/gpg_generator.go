@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 const gpgBatchFile = `
 %echo Generating a configuration OpenPGP key
@@ -11,7 +13,6 @@ Name-Real: CJ Harries
 Name-Comment: Zero Trust Secrets
 Name-Email: cj@wotw.pro
 Expire-Date: 0
-%pubring .pubring.gpg
 %commit
 %echo done
 `
@@ -27,4 +28,20 @@ func RunGpgBatch() {
 	}
 	response := ExecCmd(command...)
 	fmt.Println(response.String())
+}
+
+func CheckIfKeyExists() bool {
+	command := []string{
+		"gpg2",
+		"--list-keys",
+		"Zero Trust Secrets",
+	}
+	response := ExecCmd(command...)
+	return response.Succeeded()
+}
+
+func EnsureKeyExists() {
+	if !CheckIfKeyExists() {
+		RunGpgBatch()
+	}
 }
