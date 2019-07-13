@@ -17,7 +17,7 @@ spec:
         app: simple-client0
     spec:
       containers:
-        - image: localhost:5000/simple-client:1.0.0
+        - image: localhost:5000/simple-client:1.1.0
           name: simple-client
           env:
             - name: PORT
