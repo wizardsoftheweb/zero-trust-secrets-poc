@@ -21,15 +21,15 @@ spec:
           name: simple-client
           env:
             - name: PORT
-              value: 4747
+              value: '4747'
             - name: RANDO_ENDPOINT
-              value: http://control-server.svc/rando
+              value: 'http://control-server.zts-poc.svc/rando'
             - name: SECRETS_COUNT
-              value: 10
+              value: '10'
             - name: SECRETS_KEY
-              value: /simple-client0/secrets.json
+              value: '/simple-client0/secrets.json'
             - name: ETCD_HOSTS
-              value: http://etcd0.svc:2379/
+              value: 'http://etcd0.zts-poc.svc:2379/'
           ports:
             - containerPort: 4747
               name: http
