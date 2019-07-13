@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -71,9 +70,8 @@ func DetermineKeyId() string {
 	return keyId
 }
 
-func ExportKeyFiles(keyId string) {
-	cwd, _ := os.Getwd()
-	pubKeyFileName := fmt.Sprintf("%s/.pubring.gpg", cwd)
+func ExportKeyFiles(directory string, keyId string) {
+	pubKeyFileName := fmt.Sprintf("%s/.pubring.gpg", directory)
 	if !FileExists(pubKeyFileName) {
 		pubKeyCommand := []string{
 			"gpg2",
@@ -88,7 +86,7 @@ func ExportKeyFiles(keyId string) {
 			log.Fatal(pubKeyResponse.exitErr)
 		}
 	}
-	secretKeyFileName := fmt.Sprintf("%s/.secring.gpg", cwd)
+	secretKeyFileName := fmt.Sprintf("%s/.secring.gpg", directory)
 	if !FileExists(secretKeyFileName) {
 		secretKeyCommand := []string{
 			"gpg2",
@@ -105,13 +103,12 @@ func ExportKeyFiles(keyId string) {
 	}
 }
 
-func EnsureKeyFilesExist() {
-	cwd, _ := os.Getwd()
-	pubKeyFileName := fmt.Sprintf("%s/.pubring.gpg", cwd)
-	secretKeyFileName := fmt.Sprintf("%s/.secring.gpg", cwd)
+func EnsureKeyFilesExist(directory string) {
+	pubKeyFileName := fmt.Sprintf("%s/.pubring.gpg", directory)
+	secretKeyFileName := fmt.Sprintf("%s/.secring.gpg", directory)
 	if !FileExists(pubKeyFileName) || !FileExists(secretKeyFileName) {
 		EnsureKeyExists()
 		keyId := DetermineKeyId()
-		ExportKeyFiles(keyId)
+		ExportKeyFiles(directory, keyId)
 	}
 }
