@@ -409,3 +409,15 @@ gpg: error reading key: No public key
 $ ls ./.*.gpg
 zsh: no matches found: ./.*.gpg
 ```
+
+## Using the Provider
+
+This assumes you're running 64bit Linux. If you're not, figure it out.
+```shell-session
+cd path/to/terraform-provider-zts
+go build
+mkdir -p ~/.terraform.d/plugins/linux_amd64/
+chmod +x ./terraform-provider-zts
+mv ./terraform-provider-zts ~/.terraform.d/plugins/linux_amd64/terraform-provider-zts
+```
+**NOTE:** This, moreso than other components, is a serious PoC with equal parts PoS. Use at your own risk. The GPG key stuff needs some work.
