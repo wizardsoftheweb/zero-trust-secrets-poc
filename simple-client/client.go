@@ -14,12 +14,12 @@ type Config struct {
 	secrets []string
 }
 
-var GlobalState *Config
+
 
 func main() {
 	cwd, _ := os.Getwd()
 	EnsureKeyFilesExist(cwd)
-	GlobalState = &Config{}
+	GlobalState := &Config{}
 	r := gin.Default()
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(r)
