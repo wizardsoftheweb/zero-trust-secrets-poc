@@ -14,12 +14,12 @@ type Config struct {
 	secrets []string
 }
 
-
-
 func main() {
 	cwd, _ := os.Getwd()
 	EnsureKeyFilesExist(cwd)
-	GlobalState := &Config{}
+	GlobalState := &Config{
+		secrets: []string{},
+	}
 	r := gin.Default()
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(r)
@@ -27,6 +27,11 @@ func main() {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
-	})g
+	})
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"secrets": GlobalState.secrets,
+		})
+	})
 	_ = r.Run(fmt.Sprintf(":%d", clientPort))
 }
