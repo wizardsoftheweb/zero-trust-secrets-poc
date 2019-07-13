@@ -21,7 +21,7 @@ Expire-Date: 0
 %echo done
 `
 
-var keyIdPattern, _ = regexp.Compile(`^\s+[^\s]*?$`)
+var keyIdPattern, _ = regexp.Compile(`^\s+[^\s]*?\s*$`)
 
 func RunGpgBatch() {
 	batchFile := WriteToTempFile(gpgBatchFile)
