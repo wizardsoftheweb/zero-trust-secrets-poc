@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"github.com/gin-gonic/gin"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
@@ -17,7 +19,7 @@ import (
 const (
 	clientPort       = 4747
 	secretCount      = 10
-	secretsKey       = "/simple-value/secrets"
+	secretsKey       = "/simple-value/secrets.json"
 	controlServerUrl = "http://localhost:8080/rando"
 )
 
@@ -76,6 +78,11 @@ func GenerateSecrets(directory string) []string {
 		log.Fatal(err)
 	}
 	return parsedResponse.Secrets
+}
+
+func BootstrapViper() {
+	_ = viper.AddRemoteProvider("etcd", etcdHosts[0], secretsKey)
+	viper.SetConfigType("json")
 }
 
 func main() {
