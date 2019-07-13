@@ -1,10 +1,59 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+
+	"github.com/prometheus/common/log"
+
 	"github.com/gin-gonic/gin"
 
-	"github.com/zsais/go-gin-prometheus"
+	"github.com/xordataexchange/crypt/config"
+
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
+
+type RandoRequest struct {
+	Count   int      `json:"count"`
+	KvHosts []string `json:"kv_hosts"`
+	KvKey   string   `json:"kv_key"`
+	PubKey  string   `json:"pub_key"`
+}
+
+func WriteGpgKeyToFile(gpgKey string) *os.File {
+	file, err := ioutil.TempFile("", "")
+	if nil != err {
+		log.Fatal(err)
+	}
+	err = ioutil.WriteFile(
+		file.Name(),
+		[]byte(gpgKey),
+		0666,
+	)
+	if nil != err {
+		log.Fatal(err)
+	}
+	fmt.Println(file.Name())
+	return file
+}
+
+func WriteValue(addresses []string, pubKey string, key string, value []string) {
+	pubKeyFile := WriteGpgKeyToFile(pubKey)
+	defer os.Remove(pubKeyFile.Name())
+	fileReader, err := os.Open(pubKeyFile.Name())
+	if nil != err {
+		log.Fatal(err)
+	}
+	defer fileReader.Close()
+	fmt.Println(addresses)
+	configManager, err := config.NewEtcdConfigManager(addresses, fileReader)
+	if nil != err {
+		log.Fatal(err)
+	}
+	_ = configManager.Set(key, []byte(fmt.Sprintf("[\"%s\"]", strings.Join(value, "\",\""))))
+}
 
 func main() {
 	r := gin.Default()
@@ -13,6 +62,20 @@ func main() {
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
+		})
+	})
+
+	r.POST("/rando", func(c *gin.Context) {
+		var request RandoRequest
+		_ = c.BindJSON(&request)
+		fmt.Println(request)
+		randomStrings := make([]string, request.Count)
+		for index := 0; index < request.Count; index++ {
+			randomStrings[index], _ = GenerateRandomString(47)
+		}
+		WriteValue(request.KvHosts, request.PubKey, request.KvKey, randomStrings)
+		c.JSON(200, gin.H{
+			"message": randomStrings,
 		})
 	})
 	_ = r.Run() // listen and serve on 0.0.0.0:8080
