@@ -7,7 +7,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: control-server-port
+    - name: http
       port: 8080
       protocol: TCP
       targetPort: 8080
