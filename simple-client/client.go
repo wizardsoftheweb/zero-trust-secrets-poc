@@ -19,15 +19,17 @@ import (
 )
 
 const (
-	clientPort       = 4747
-	secretCount      = 10
-	secretsKey       = "/simple-client/secrets.json"
-	controlServerUrl = "http://localhost:8080/rando"
+	clientPort  = 4747
+	secretCount = 10
+	secretsKey  = "/simple-client/secrets.json"
 )
 
-var etcdHosts = []string{
-	"http://127.0.0.1:2379/",
-}
+var (
+	controlServerUrl = os.Getenv("RANDO_ENDPOINT")
+	etcdHosts        = []string{
+		"http://127.0.0.1:2379/",
+	}
+)
 
 type Config struct {
 	directory string
