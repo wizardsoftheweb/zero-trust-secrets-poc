@@ -1,8 +1,25 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
+)
+
+const clientPort = 4747
 
 func main() {
 	cwd, _ := os.Getwd()
 	EnsureKeyFilesExist(cwd)
+	r := gin.Default()
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+	_ = r.Run(fmt.Sprintf(":%d", clientPort))
 }
