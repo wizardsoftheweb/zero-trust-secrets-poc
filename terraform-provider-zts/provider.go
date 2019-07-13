@@ -12,6 +12,11 @@ func Provider() *schema.Provider {
 				Required:    true,
 				Description: "The etcd server to store config",
 			},
+			"control_server": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The address to the control server",
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"zts_secrets":  resourceSecrets(),
