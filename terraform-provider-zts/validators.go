@@ -60,6 +60,9 @@ func validateFileObject(isDirectory bool, objectSchemaString interface{}, k stri
 }
 
 func simpleFileExists(filePath string) bool {
-	stat, errs := checkFileObjectExists(filePath)
-	return 0 == len(errs) && !stat.IsDir()
+	stat, err := os.Stat(filePath)
+	if nil != err {
+		return false
+	}
+	return !stat.IsDir()
 }
