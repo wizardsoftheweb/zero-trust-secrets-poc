@@ -94,7 +94,7 @@ Assume I have a control server running at `localhost:8080` with an `etcd` endpoi
 
     ```shell-session
     $ crypt get -endpoint='http://127.0.0.1:2379/' /test/value | sed -e $'s/,/,\\\n/g'
-    ["WGRY6KWlc-p1AD0IfI6iukkupzC834FEeOYw9Icrmm__2mi_y9wPc4pOaNWP6xE=",
+    {"secrets":["WGRY6KWlc-p1AD0IfI6iukkupzC834FEeOYw9Icrmm__2mi_y9wPc4pOaNWP6xE=",
     "WMcM4leIq4enKlhYmBOWSyS4E-EjioWpN0miIUuJ38_bKBKdAz9-Q93Qsk_csWE=",
     "7kDkFQ7ENTXrEXnpzcIbyIhgkL4AEIHvPIbvSaM8ifjKQzBPNhcmIJslZkwO-NY=",
     "bZljvk6L44oWSbBrJHTnV7bU-IovuElq1JU8GiHxr6jZTRXo4qOaLInXakeQvOI=",
@@ -103,8 +103,10 @@ Assume I have a control server running at `localhost:8080` with an `etcd` endpoi
     "4F6_jFVItGBo_ODeXKzOZYQ_cBuXvmbPtg2SS9x3JE2WW4dVeweTUY1vmFQV-CA=",
     "q4RYskDY0M-sDt2zZebdSmZzmluKIrBmkCGzW4KbjdnjFtHeM2gxifCKZf9_L6c=",
     "OVN2pLlwn5fC7t_d3C9gsY6xwZe6z5KHxH8V9i1dwsrAeNjYoIbXVHlF_kiXkkg=",
-    "DL9v-sVoacQA3Pqf3vjb38Av3LXlmA5ncslMBSgTb6vDz9dqGjmxa6M9KSrSEkU="]
+    "DL9v-sVoacQA3Pqf3vjb38Av3LXlmA5ncslMBSgTb6vDz9dqGjmxa6M9KSrSEkU="]}
     ```
+    
+    (the output might be a bit wonky; I changed it in a later section)
 ### Currently Missing
 
 * The control server does not sign its values
