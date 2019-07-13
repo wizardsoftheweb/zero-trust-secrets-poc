@@ -104,3 +104,145 @@ You can view the current secrets by visiting `localhost:4747` once the simple cl
 ### Watch Remote Changes
 
 Viper makes it very easy [to watch for remote changes](https://github.com/spf13/viper#watching-changes-in-etcd---unencrypted) (the example is unencrypted; encrypted is almost identical). After the client boots for the first time, Viper spins off a Go routine that runs every 30 seconds (it could be shorter but idgaf) that will update the global state. As before, you can check the current state by visiting `localhost:4747`. You can now force an update on the secrets by hitting `localhost:4747/force-update`. Once the remote watcher runs again, the secrets at `localhost:4747` should be updated.
+
+## Putting it All Together
+
+Ensure there's nothing in `etcd` at the desired key.
+```shell-session
+$ etcdctl --endpoint 'http://127.0.0.1:2379' --no-sync rm -r /simple-client
+$ etcdctl --endpoint 'http://127.0.0.1:2379' --no-sync ls /simple-client
+Error:  100: Key not found (/simple-client) [30]
+```
+Launch the control server. You can run this in the background if you aren't interested in the logs.
+```shell-session
+cd path/to/zero-trust-secrets/control-server
+go build && ./control-server
+```
+Verify it's up.
+```shell-session
+$ curl localhost:8080/ping
+{"message":"pong"}
+```
+Launch the simple client.
+```shell-session
+cd path/to/zero-trust-secrets/simple-client
+go build && ./simple-client
+```
+Verify it's up.
+```shell-session
+$ curl localhost:4747/ping
+{"message":"pong"}
+```
+Check the current secrets.
+```shell-session
+$ curl -s localhost:4747 | jq
+{
+  "secrets": [
+    "DjNSv1hcDhmWw7FqR8VwQU_KYtdjftpWj3osjiDR2IFsSNjHvVMbi0j4w6-ghZs=",
+    "z6ViB2tzqRRdGCyWrnd8Q9mtGo60C9Ui-bsgvQqZapc1mAMAjt9ntvfWV9BvZzk=",
+    "wscoYgJVLr875HC41jfO0gCCTH3DdwRqw6Osi0lIJUdo2FyPgZlMnbSUgfxXJyY=",
+    "tlKfvnjlwaZQFoQPZs5_BzLuCXiiB4OIctWvposwVQb3FbgVntE2To2atJZCsNM=",
+    "voSY5B6KDEYm6b0Q-717m26UbcDV2ECG3vZfEGNU9RtBnZfo4afAwYViQG7vnWk=",
+    "S0BtsHPiHCOwBEO86f2VTSLf0tRU98qv3-R3zWU9sBvydYnEzDVehr9gevd4Lyo=",
+    "a_1Vsbie_trEsypEB7RvQ7Pp6BqAOuFNMAZyeawcsftVQJsTFdjxH_Inl1PpcJc=",
+    "HWxX_Di5BvOWAPhhyhhp0CS4GjsyoHi18biY4riml_Y4Jc-JErU5Sf_kJ-G9XFI=",
+    "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
+    "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
+  ]
+} 
+```
+Those secrets shouldn't change. If they do, something's wrong.
+```shell-session
+$ curl -s localhost:4747 | jq
+{
+  "secrets": [
+    "DjNSv1hcDhmWw7FqR8VwQU_KYtdjftpWj3osjiDR2IFsSNjHvVMbi0j4w6-ghZs=",
+    "z6ViB2tzqRRdGCyWrnd8Q9mtGo60C9Ui-bsgvQqZapc1mAMAjt9ntvfWV9BvZzk=",
+    "wscoYgJVLr875HC41jfO0gCCTH3DdwRqw6Osi0lIJUdo2FyPgZlMnbSUgfxXJyY=",
+    "tlKfvnjlwaZQFoQPZs5_BzLuCXiiB4OIctWvposwVQb3FbgVntE2To2atJZCsNM=",
+    "voSY5B6KDEYm6b0Q-717m26UbcDV2ECG3vZfEGNU9RtBnZfo4afAwYViQG7vnWk=",
+    "S0BtsHPiHCOwBEO86f2VTSLf0tRU98qv3-R3zWU9sBvydYnEzDVehr9gevd4Lyo=",
+    "a_1Vsbie_trEsypEB7RvQ7Pp6BqAOuFNMAZyeawcsftVQJsTFdjxH_Inl1PpcJc=",
+    "HWxX_Di5BvOWAPhhyhhp0CS4GjsyoHi18biY4riml_Y4Jc-JErU5Sf_kJ-G9XFI=",
+    "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
+    "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
+  ]
+} 
+```
+You can force an update to change the secrets.
+```shell-session
+$ curl -s localhost:4747/force-update | jq
+{
+  "message": "Secrets were regenerated"
+}
+```
+If you check immediately, they'll be the same.
+```shell-session
+$ curl -s localhost:4747 | jq; curl -s localhost:4747/force-update | jq; curl -s localhost:4747 | jq
+{
+  "secrets": [
+    "DjNSv1hcDhmWw7FqR8VwQU_KYtdjftpWj3osjiDR2IFsSNjHvVMbi0j4w6-ghZs=",
+    "z6ViB2tzqRRdGCyWrnd8Q9mtGo60C9Ui-bsgvQqZapc1mAMAjt9ntvfWV9BvZzk=",
+    "wscoYgJVLr875HC41jfO0gCCTH3DdwRqw6Osi0lIJUdo2FyPgZlMnbSUgfxXJyY=",
+    "tlKfvnjlwaZQFoQPZs5_BzLuCXiiB4OIctWvposwVQb3FbgVntE2To2atJZCsNM=",
+    "voSY5B6KDEYm6b0Q-717m26UbcDV2ECG3vZfEGNU9RtBnZfo4afAwYViQG7vnWk=",
+    "S0BtsHPiHCOwBEO86f2VTSLf0tRU98qv3-R3zWU9sBvydYnEzDVehr9gevd4Lyo=",
+    "a_1Vsbie_trEsypEB7RvQ7Pp6BqAOuFNMAZyeawcsftVQJsTFdjxH_Inl1PpcJc=",
+    "HWxX_Di5BvOWAPhhyhhp0CS4GjsyoHi18biY4riml_Y4Jc-JErU5Sf_kJ-G9XFI=",
+    "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
+    "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
+  ]
+} 
+{
+  "message": "Secrets were regenerated"
+}
+{
+  "secrets": [
+    "DjNSv1hcDhmWw7FqR8VwQU_KYtdjftpWj3osjiDR2IFsSNjHvVMbi0j4w6-ghZs=",
+    "z6ViB2tzqRRdGCyWrnd8Q9mtGo60C9Ui-bsgvQqZapc1mAMAjt9ntvfWV9BvZzk=",
+    "wscoYgJVLr875HC41jfO0gCCTH3DdwRqw6Osi0lIJUdo2FyPgZlMnbSUgfxXJyY=",
+    "tlKfvnjlwaZQFoQPZs5_BzLuCXiiB4OIctWvposwVQb3FbgVntE2To2atJZCsNM=",
+    "voSY5B6KDEYm6b0Q-717m26UbcDV2ECG3vZfEGNU9RtBnZfo4afAwYViQG7vnWk=",
+    "S0BtsHPiHCOwBEO86f2VTSLf0tRU98qv3-R3zWU9sBvydYnEzDVehr9gevd4Lyo=",
+    "a_1Vsbie_trEsypEB7RvQ7Pp6BqAOuFNMAZyeawcsftVQJsTFdjxH_Inl1PpcJc=",
+    "HWxX_Di5BvOWAPhhyhhp0CS4GjsyoHi18biY4riml_Y4Jc-JErU5Sf_kJ-G9XFI=",
+    "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
+    "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
+  ]
+} 
+```
+However, if you wait for the refresh time, the secrets will be updated.
+```shell-session
+$ curl -s localhost:4747/force-update | jq; sleep 30; curl -s localhost:4747 | jq
+{
+  "secrets": [
+    "DjNSv1hcDhmWw7FqR8VwQU_KYtdjftpWj3osjiDR2IFsSNjHvVMbi0j4w6-ghZs=",
+    "z6ViB2tzqRRdGCyWrnd8Q9mtGo60C9Ui-bsgvQqZapc1mAMAjt9ntvfWV9BvZzk=",
+    "wscoYgJVLr875HC41jfO0gCCTH3DdwRqw6Osi0lIJUdo2FyPgZlMnbSUgfxXJyY=",
+    "tlKfvnjlwaZQFoQPZs5_BzLuCXiiB4OIctWvposwVQb3FbgVntE2To2atJZCsNM=",
+    "voSY5B6KDEYm6b0Q-717m26UbcDV2ECG3vZfEGNU9RtBnZfo4afAwYViQG7vnWk=",
+    "S0BtsHPiHCOwBEO86f2VTSLf0tRU98qv3-R3zWU9sBvydYnEzDVehr9gevd4Lyo=",
+    "a_1Vsbie_trEsypEB7RvQ7Pp6BqAOuFNMAZyeawcsftVQJsTFdjxH_Inl1PpcJc=",
+    "HWxX_Di5BvOWAPhhyhhp0CS4GjsyoHi18biY4riml_Y4Jc-JErU5Sf_kJ-G9XFI=",
+    "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
+    "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
+  ]
+} 
+{
+  "message": "Secrets were regenerated"
+}
+{
+  "secrets": [
+    "Oy0iaGHcLH1dax7D2Rm6eT9GNuoS-11IQHXqYFCp7uwMhJgxYlpQa_BxOD7HzPY=",
+    "ynlQUE-NMH3Ki6G_pVXI8dpzYzSMWC-hOVNBxhPTrwy1roAW_5qoZbdVGyPBgFc=",
+    "w3XatsLyFnBnPfclMP7ALBRB8rqRbw-3xD0ZdZR8b6AuLIhylcAn4sLnjkWbOnA=",
+    "OOGpZ0iU7-9N9_YZlxKwseTkq6NkeJGqObchUmDZkL5xLfl5_mBmFQMWNNL6spc=",
+    "AFLsLiRQOTrs5pOodWErc6DoX-8zQbUf37tOgc-64AxhGU3kauQ0k289VogV6nc=",
+    "8DpPDlGpKsSr9HIG2I6SjYO48BW5pMeDnTlk-lLrHq2NJFp7Frj1yiUQKrp3qtk=",
+    "CBNfm9lByS0l_HwTNx5fCu5fo_cFpY6wH7HsbJ2kU6mex7uiUtMwdHbKq3EK9C0=",
+    "uOfDYhtxQwuPaa__82oKbu7v5MpSfr6C3joH8ISyryxVaQ3ZcVdJgLUouRG8Ls0=",
+    "4eM_69g2hBH3xOFZrgiEpTYNVEsBGMG8_ddHQnEwgHSPIcHmV1BVW_kAcxVZfSE=",
+    "hk285R_kLA-7cMZCNQHbRGiX7PYaOPcMJ7BezPaAyK8kCm4vU-dAeg_vk-ca4YQ="
+  ]
+}
+```
