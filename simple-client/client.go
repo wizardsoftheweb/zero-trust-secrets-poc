@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
@@ -29,7 +30,8 @@ var etcdHosts = []string{
 }
 
 type Config struct {
-	secrets []string
+	directory string
+	secrets   []string
 }
 
 type RandoRequest struct {
@@ -81,6 +83,23 @@ func GenerateSecrets(directory string) []string {
 	return parsedResponse.Secrets
 }
 
+func StartWatchingRemote(state *Config) {
+	for {
+		time.Sleep(time.Second * 30)
+		err := viper.WatchRemoteConfig()
+		if nil != err {
+			if viper.RemoteConfigError("No Files Found") == err {
+				GenerateSecrets(state.directory)
+				_ = viper.ReadRemoteConfig()
+			} else {
+				log.Println(err)
+				continue
+			}
+		}
+		state.secrets = viper.GetStringSlice("secrets")
+	}
+}
+
 func BootstrapViper(directory string) {
 	err := viper.AddSecureRemoteProvider(
 		"etcd",
@@ -89,12 +108,18 @@ func BootstrapViper(directory string) {
 		GetKeyFileName(directory, GpgKeyTypeSecret),
 	)
 	if nil != err {
+		log.Println(err.Error())
 		log.Fatal(err)
 	}
 	viper.SetConfigType("json")
 	err = viper.ReadRemoteConfig()
 	if nil != err {
-		log.Fatal(err)
+		if viper.RemoteConfigError("No Files Found") == err {
+			GenerateSecrets(directory)
+			_ = viper.ReadRemoteConfig()
+		} else {
+			log.Fatal(err)
+		}
 	}
 	secrets := viper.GetStringSlice("secrets")
 	if 0 == len(secrets) {
@@ -108,8 +133,10 @@ func main() {
 	EnsureKeyFilesExist(cwd)
 	BootstrapViper(cwd)
 	GlobalState := &Config{
-		secrets: viper.GetStringSlice("secrets"),
+		directory: cwd,
+		secrets:   viper.GetStringSlice("secrets"),
 	}
+	go StartWatchingRemote(GlobalState)
 	r := gin.Default()
 	p := ginprometheus.NewPrometheus("gin")
 	p.Use(r)

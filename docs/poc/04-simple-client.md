@@ -86,4 +86,21 @@ For the generation, I'm using [the basic example from `crypt`](https://github.co
         ```shell-session
         $ gpg --output .secring.gpg --armor --export-secret-key something
         ```
+        
+### Bootstrap Secrets
 
+I created a simple function to `POST` to the control server to simulate secret construction. This call requests for the local `etcd` host (`http://127.0.0.1:2379/`) to build a JSON file containing 10 strings at `/simple-client/secrets.json`. Every time the function is called, the secrets will be regenerated.
+
+The client's boot config process is as follows:
+
+1. Using [Viper's support for remote config](https://github.com/spf13/viper#remote-keyvalue-store-support), attempt to load `/simple-client/secrets.json` from the local `etcd` host and the provided keyring. If the file DNE, call the secret generation function.
+
+2. With the config loaded, check the `secrets` key. If the key DNE or has no values, call the secret generation function.
+
+3. Set `secrets` in the global state to the found config value.
+
+You can view the current secrets by visiting `localhost:4747` once the simple client is running.
+
+### Watch Remote Changes
+
+Viper makes it very easy [to watch for remote changes](https://github.com/spf13/viper#watching-changes-in-etcd---unencrypted) (the example is unencrypted; encrypted is almost identical). After the client boots for the first time, Viper spins off a Go routine that runs every 30 seconds (it could be shorter but idgaf) that will update the global state. As before, you can check the current state by visiting `localhost:4747`. You can now force an update on the secrets by hitting `localhost:4747/force-update`. Once the remote watcher runs again, the secrets at `localhost:4747` should be updated.
