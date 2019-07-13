@@ -19,6 +19,10 @@ spec:
       labels:
         app: simple-client{{ $index }}
     spec:
+      initContainers:
+        - name: wait-for-control-server
+          image: busybox
+          command: ["/bin/sh", "-c", "while (wget -q -O - http://control-server:8080/ping | awk '/pong/{ exit(1) }'); do sleep 5; done"]
       containers:
         - image: wizardsoftheweb/zts-poc:simple-client
           imagePullPolicy: Always
