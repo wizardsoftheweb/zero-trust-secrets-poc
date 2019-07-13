@@ -52,7 +52,7 @@ func WriteValue(addresses []string, pubKey string, key string, value []string) {
 	if nil != err {
 		log.Fatal(err)
 	}
-	_ = configManager.Set(key, []byte(fmt.Sprintf("[\"%s\"]", strings.Join(value, "\",\""))))
+	_ = configManager.Set(key, []byte(fmt.Sprintf(`{"secrets":["%s"]}`, strings.Join(value, `","`))))
 }
 
 func main() {
