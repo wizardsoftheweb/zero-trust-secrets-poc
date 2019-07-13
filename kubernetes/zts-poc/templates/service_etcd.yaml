@@ -1,0 +1,25 @@
+{{- $rootScope := . -}}
+{{ range $index, $error := until (.Values.etcd.clusterNodeCount | int) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    etcd_node: etcd{{ $index }}
+{{ include "zts-poc.labels" $rootScope | indent 4 }}
+  name: etcd{{ $index }}
+  namespace: {{ include "zts-poc.name" $rootScope }}
+spec:
+  type: NodePort
+  ports:
+    - name: client
+      port: 2379
+      protocol: TCP
+      targetPort: 2379
+    - name: server
+      port: 2380
+      protocol: TCP
+      targetPort: 2380
+  selector:
+    etcd_node: etcd{{ $index }}
+{{ end }}

@@ -8,8 +8,8 @@ metadata:
     "helm.sh/hook": test-success
 spec:
   containers:
-    - name: wget
+    - name: pong
       image: busybox
-      command: ['wget']
-      args:  ['{{ include "zts-poc.fullname" . }}:{{ .Values.service.port }}']
+      command: ['curl']
+      args:  ['control-server.{{ include "zts-poc.name" . }}.svc:8080/ping']
   restartPolicy: Never

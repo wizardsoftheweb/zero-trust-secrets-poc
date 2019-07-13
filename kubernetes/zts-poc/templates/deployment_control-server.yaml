@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: control-server
+{{ include "zts-poc.labels" . | indent 4 }}
+  name: control-server
+  namespace: {{ include "zts-poc.name" . }}
+spec:
+  replicas: {{ .Values.controlServer.replicaCount | int }}
+  selector:
+    matchLabels:
+      app: control-server
+  template:
+    metadata:
+      labels:
+        app: control-server
+    spec:
+      containers:
+        - image: localhost:5000/control-server:2.1.0
+          name: control-server
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+      restartPolicy: Always

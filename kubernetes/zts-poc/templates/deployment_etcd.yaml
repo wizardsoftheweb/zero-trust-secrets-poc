@@ -1,0 +1,55 @@
+{{- $rootScope := . -}}
+{{ range $index, $error := until (.Values.simpleClient.desiredCount | int) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: etcd
+    etcd_node: etcd{{ $index }}
+{{ include "zts-poc.labels" $rootScope | indent 4 }}
+  name: etcd{{ $index }}
+  namespace: {{ include "zts-poc.name" $rootScope }}
+spec:
+  replicas: {{ $rootScope.Values.etcd.replicaCount }}
+  selector:
+    matchLabels:
+      app: etcd
+      etcd_node: etcd{{ $index }}
+  template:
+    metadata:
+      labels:
+        app: etcd
+        etcd_node: etcd{{ $index }}
+    spec:
+      containers:
+        - command:
+            - /usr/local/bin/etcd
+            - --name
+            - etcd{{ $index }}
+            - --initial-advertise-peer-urls
+            - http://etcd{{ $index }}:2380
+            - --listen-peer-urls
+            - http://0.0.0.0:2380
+            - --listen-client-urls
+            - http://0.0.0.0:2379
+            - --advertise-client-urls
+            - http://etcd{{ $index }}:2379
+            - --initial-cluster
+            - {{ range $innerIndex, $error := until ($rootScope.Values.etcd.clusterNodeCount | int) -}}
+              etcd{{ $innerIndex }}=http://etcd{{ $innerIndex }}:2380
+              {{- if lt 1 (sub ($rootScope.Values.etcd.clusterNodeCount | int) ($innerIndex | int)) -}},{{- end -}}
+              {{- end}}
+            - --initial-cluster-state
+            - new
+          image: quay.io/coreos/etcd:latest
+          name: etcd{{ $index }}
+          ports:
+            - containerPort: 2379
+              name: client
+              protocol: TCP
+            - containerPort: 2380
+              name: server
+              protocol: TCP
+      restartPolicy: Always
+{{ end }}
