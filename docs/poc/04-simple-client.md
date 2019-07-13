@@ -29,7 +29,7 @@ For the generation, I'm using [the basic example from `crypt`](https://github.co
 
 **NOTE:** This key has no passphrase. Notice the `%noprotection`. I don't have a way around that yet.
 
-1. Check to see if the CWD has `.pubring.gpg` and `.secring.gpg`. If both exist, done. Otherwise, continue.
+1. Check to see if the specified directory has `.pubring.gpg` and `.secring.gpg`. If both exist, done. Otherwise, continue.
 
 2. Check to see if the GPG keyring contains a key with the note `Zero Trust Secrets` (it's not dynamic for name because this is a PoC). If it exists, skip to step 5. Else continue.
 
@@ -71,7 +71,7 @@ For the generation, I'm using [the basic example from `crypt`](https://github.co
     
     If the line is a match, I strip the whitespace and return that as the ID. If I can't determine an ID, the client panics. Whoops.
     
-6. Using the key ID, the client checks the existence of each file in the CWD.
+6. Using the key ID, the client checks the existence of each file in the specified directory.
 
     * If `.pubring.gpg` DNE,
     
