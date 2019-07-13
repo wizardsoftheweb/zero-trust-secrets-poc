@@ -101,4 +101,6 @@ The client's boot config process is as follows:
 
 You can view the current secrets by visiting `localhost:4747` once the simple client is running.
 
+### Watch Remote Changes
 
+Viper makes it very easy [to watch for remote changes](https://github.com/spf13/viper#watching-changes-in-etcd---unencrypted) (the example is unencrypted; encrypted is almost identical). After the client boots for the first time, Viper spins off a Go routine that runs every 30 seconds (it could be shorter but idgaf) that will update the global state. As before, you can check the current state by visiting `localhost:4747`. You can now force an update on the secrets by hitting `localhost:4747/force-update`. Once the remote watcher runs again, the secrets at `localhost:4747` should be updated.
