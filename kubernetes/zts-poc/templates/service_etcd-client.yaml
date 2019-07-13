@@ -10,8 +10,8 @@ spec:
   type: NodePort
   ports:
     - name: etcd-client-port
-      port: 2379
+      port: {{ .Values.etcd.clientPort }}
       protocol: TCP
-      targetPort: 2379
+      targetPort: {{ .Values.etcd.clientPort }}
   selector:
     app: etcd

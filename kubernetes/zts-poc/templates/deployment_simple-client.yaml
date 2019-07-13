@@ -38,7 +38,7 @@ spec:
               value: '/simple-client{{ $index }}/secrets.json'
             - name: ETCD_HOSTS
               value: "{{ range $innerIndex, $error := until ($rootScope.Values.etcd.clusterNodeCount | int) -}}
-              http://etcd{{ $innerIndex }}.zts-poc.svc:2379/
+              http://etcd{{ $innerIndex }}.zts-poc.svc:{{ $rootScope.Values.etcd.clientPort }}/
                 {{- if lt 1 (sub ($rootScope.Values.etcd.clusterNodeCount | int) ($innerIndex | int)) -}}
                   ,
                 {{- end -}}

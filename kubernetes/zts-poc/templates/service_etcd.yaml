@@ -13,13 +13,13 @@ spec:
   type: NodePort
   ports:
     - name: client
-      port: 2379
+      port: {{ $rootScope.Values.etcd.clientPort }}
       protocol: TCP
-      targetPort: 2379
+      targetPort: {{ $rootScope.Values.etcd.clientPort }}
     - name: server
-      port: 2380
+      port: {{ $rootScope.Values.etcd.peerPort }}
       protocol: TCP
-      targetPort: 2380
+      targetPort: {{ $rootScope.Values.etcd.peerPort }}
   selector:
     etcd_node: etcd{{ $index }}
 {{ end }}

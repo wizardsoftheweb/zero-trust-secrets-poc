@@ -28,16 +28,16 @@ spec:
             - --name
             - etcd{{ $index }}
             - --initial-advertise-peer-urls
-            - http://etcd{{ $index }}.{{ include "zts-poc.name" $rootScope }}.svc:2380
+            - http://etcd{{ $index }}.{{ include "zts-poc.name" $rootScope }}.svc:{{ $rootScope.Values.etcd.peerPort }}
             - --listen-peer-urls
-            - http://0.0.0.0:2380
+            - http://0.0.0.0:{{ $rootScope.Values.etcd.peerPort }}
             - --listen-client-urls
-            - http://0.0.0.0:2379
+            - http://0.0.0.0:{{ $rootScope.Values.etcd.clientPort }}
             - --advertise-client-urls
-            - http://etcd{{ $index }}.{{ include "zts-poc.name" $rootScope }}.svc:2379
+            - http://etcd{{ $index }}.{{ include "zts-poc.name" $rootScope }}.svc:{{ $rootScope.Values.etcd.clientPort }}
             - --initial-cluster
             - {{ range $innerIndex, $error := until ($rootScope.Values.etcd.clusterNodeCount | int) -}}
-              etcd{{ $innerIndex }}=http://etcd{{ $innerIndex }}.{{ include "zts-poc.name" $rootScope }}.svc:2380
+              etcd{{ $innerIndex }}=http://etcd{{ $innerIndex }}.{{ include "zts-poc.name" $rootScope }}.svc:{{ $rootScope.Values.etcd.peerPort }}
               {{- if lt 1 (sub ($rootScope.Values.etcd.clusterNodeCount | int) ($innerIndex | int)) -}},{{- end -}}
               {{- end}}
             - --initial-cluster-state
@@ -45,10 +45,10 @@ spec:
           image: quay.io/coreos/etcd:latest
           name: etcd{{ $index }}
           ports:
-            - containerPort: 2379
+            - containerPort: {{ $rootScope.Values.etcd.clientPort }}
               name: client
               protocol: TCP
-            - containerPort: 2380
+            - containerPort: {{ $rootScope.Values.etcd.peerPort }}
               name: server
               protocol: TCP
       restartPolicy: Always

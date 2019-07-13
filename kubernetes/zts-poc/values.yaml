@@ -4,10 +4,12 @@ fullnameOverride: ""
 etcd:
   clusterNodeCount: 2
   replicaCount: 1
+  peerPort: 2380
+  clientPort: 2379
 
 controlServer:
   replicaCount: 1
-  port: 8080
+  containerPort: 8080
 
 simpleClient:
   desiredCount: 1
