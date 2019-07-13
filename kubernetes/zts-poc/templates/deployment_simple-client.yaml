@@ -1,13 +1,13 @@
 {{- $rootScope := . -}}
-{{ range $index, $error := until (.Values.etcd.clusterNodeCount | int) }}
+{{ range $index, $error := until (.Values.simpleClient.desiredCount | int) }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: simple-client{{ $index }}
+    app: simple-client
 {{ include "zts-poc.labels" $rootScope | indent 4 }}
-  name: simple-client
+  name: simple-client{{ $index }}
   namespace: {{ include "zts-poc.name" $rootScope }}
 spec:
   replicas: {{ $rootScope.Values.simpleClient.replicaCount | int }}
@@ -20,7 +20,8 @@ spec:
         app: simple-client{{ $index }}
     spec:
       containers:
-        - image: localhost:5000/simple-client:1.1.0
+        - image: wizardsoftheweb/zts-poc:simple-client
+          imagePullPolicy: Always
           name: simple-client
           env:
             - name: PORT
@@ -32,12 +33,12 @@ spec:
             - name: SECRETS_KEY
               value: '/simple-client{{ $index }}/secrets.json'
             - name: ETCD_HOSTS
-              value: {{ range $innerIndex, $error := until ($rootScope.Values.etcd.clusterNodeCount | int) -}}
-              'http://etcd{{ $innerIndex }}.zts-poc.svc:2379/'
+              value: "{{ range $innerIndex, $error := until ($rootScope.Values.etcd.clusterNodeCount | int) -}}
+              http://etcd{{ $innerIndex }}.zts-poc.svc:2379/
                 {{- if lt 1 (sub ($rootScope.Values.etcd.clusterNodeCount | int) ($innerIndex | int)) -}}
                   ,
                 {{- end -}}
-              {{- end}}
+              {{- end}}"
           ports:
             - containerPort: 4747
               name: http

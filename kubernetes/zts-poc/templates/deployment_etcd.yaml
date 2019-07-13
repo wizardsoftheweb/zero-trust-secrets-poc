@@ -1,5 +1,5 @@
 {{- $rootScope := . -}}
-{{ range $index, $error := until (.Values.simpleClient.desiredCount | int) }}
+{{ range $index, $error := until (.Values.etcd.clusterNodeCount | int) }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -28,16 +28,16 @@ spec:
             - --name
             - etcd{{ $index }}
             - --initial-advertise-peer-urls
-            - http://etcd{{ $index }}:2380
+            - http://etcd{{ $index }}.{{ include "zts-poc.name" $rootScope }}.svc:2380
             - --listen-peer-urls
             - http://0.0.0.0:2380
             - --listen-client-urls
             - http://0.0.0.0:2379
             - --advertise-client-urls
-            - http://etcd{{ $index }}:2379
+            - http://etcd{{ $index }}.{{ include "zts-poc.name" $rootScope }}.svc:2379
             - --initial-cluster
             - {{ range $innerIndex, $error := until ($rootScope.Values.etcd.clusterNodeCount | int) -}}
-              etcd{{ $innerIndex }}=http://etcd{{ $innerIndex }}:2380
+              etcd{{ $innerIndex }}=http://etcd{{ $innerIndex }}.{{ include "zts-poc.name" $rootScope }}.svc:2380
               {{- if lt 1 (sub ($rootScope.Values.etcd.clusterNodeCount | int) ($innerIndex | int)) -}},{{- end -}}
               {{- end}}
             - --initial-cluster-state

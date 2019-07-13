@@ -18,7 +18,8 @@ spec:
         app: control-server
     spec:
       containers:
-        - image: localhost:5000/control-server:2.1.0
+        - image: wizardsoftheweb/zts-poc:control-server
+          imagePullPolicy: Always
           name: control-server
           ports:
             - containerPort: 8080
