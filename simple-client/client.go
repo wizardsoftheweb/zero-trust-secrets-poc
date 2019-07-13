@@ -18,7 +18,7 @@ const (
 	clientPort       = 4747
 	secretCount      = 10
 	secretsKey       = "/simple-value/secrets"
-	controlServerUrl = "http://localhost:8080"
+	controlServerUrl = "http://localhost:8080/rando"
 )
 
 var etcdHosts = []string{
@@ -56,12 +56,14 @@ func GenerateSecrets(directory string) []string {
 		KvKey:   secretsKey,
 		PubKey:  loadPubKey(directory),
 	}
+	log.Printf("%#v", requestBody)
 	buffer := new(bytes.Buffer)
 	_ = json.NewEncoder(buffer).Encode(requestBody)
 	request, _ := http.NewRequest("POST", controlServerUrl, buffer)
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if nil != err {
+		log.Println("Unable to post request")
 		log.Fatal(err)
 	}
 	responseBody, err := ioutil.ReadAll(response.Body)
