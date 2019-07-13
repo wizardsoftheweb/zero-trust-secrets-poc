@@ -1,7 +1,10 @@
 package main
 
-const gpgBatchFile = `\
+import "fmt"
+
+const gpgBatchFile = `
 %echo Generating a configuration OpenPGP key
+%no-protection
 Key-Type: default
 Subkey-Type: default
 Name-Real: CJ Harries
@@ -12,3 +15,16 @@ Expire-Date: 0
 %commit
 %echo done
 `
+
+func RunGpgBatch() {
+	batchFile := WriteToTempFile(gpgBatchFile)
+	command := []string{
+		"gpg2",
+		"--batch",
+		"--armor",
+		"--gen-key",
+		batchFile.Name(),
+	}
+	response := ExecCmd(command...)
+	fmt.Println(response.String())
+}
