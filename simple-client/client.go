@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
+	_ "github.com/spf13/viper/remote"
 
 	"github.com/gin-gonic/gin"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
@@ -19,7 +20,7 @@ import (
 const (
 	clientPort       = 4747
 	secretCount      = 10
-	secretsKey       = "/simple-value/secrets.json"
+	secretsKey       = "/simple-client/secrets.json"
 	controlServerUrl = "http://localhost:8080/rando"
 )
 
@@ -80,16 +81,34 @@ func GenerateSecrets(directory string) []string {
 	return parsedResponse.Secrets
 }
 
-func BootstrapViper() {
-	_ = viper.AddRemoteProvider("etcd", etcdHosts[0], secretsKey)
+func BootstrapViper(directory string) {
+	err := viper.AddSecureRemoteProvider(
+		"etcd",
+		etcdHosts[0],
+		secretsKey,
+		GetKeyFileName(directory, GpgKeyTypeSecret),
+	)
+	if nil != err {
+		log.Fatal(err)
+	}
 	viper.SetConfigType("json")
+	err = viper.ReadRemoteConfig()
+	if nil != err {
+		log.Fatal(err)
+	}
+	secrets := viper.GetStringSlice("secrets")
+	if 0 == len(secrets) {
+		log.Println("Generating secrets")
+		GenerateSecrets(directory)
+	}
 }
 
 func main() {
 	cwd, _ := os.Getwd()
 	EnsureKeyFilesExist(cwd)
+	BootstrapViper(cwd)
 	GlobalState := &Config{
-		secrets: GenerateSecrets(cwd),
+		secrets: viper.GetStringSlice("secrets"),
 	}
 	r := gin.Default()
 	p := ginprometheus.NewPrometheus("gin")
