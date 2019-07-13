@@ -1,6 +1,8 @@
 package main
 
 import (
+	"path/filepath"
+
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -14,14 +16,17 @@ func resourceGpgKeys() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"directory": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
+				Optional:    true,
 				Description: "Directory to store the generated keys",
 				ValidateFunc: func(i interface{}, s string) (strings []string, errors []error) {
 					return validateFileObject(true, i, s)
 				},
+				StateFunc: resolvePath,
 			},
 			"batch": &schema.Schema{
-				Optional: false,
+				Type:     schema.TypeSet,
+				Required: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -45,18 +50,23 @@ func resourceGpgKeys() *schema.Resource {
 			},
 			"pub_key": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    false,
+				Optional:    true,
 				Default:     ".pubring.gpg",
 				Description: "The desired pub key basename",
 			},
 			"secret_key": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    false,
+				Optional:    true,
 				Default:     ".secring.gpg",
 				Description: "The desired secret key basename",
 			},
 		},
 	}
+}
+
+func resolvePath(objectPathSchemaString interface{}) string {
+	objectPath, _ := objectPathSchemaString.(string)
+	return filepath.Clean(objectPath)
 }
 
 func resourceGpgKeysCreate(d *schema.ResourceData, m interface{}) error {

@@ -29,7 +29,7 @@ func resourceSecrets() *schema.Resource {
 			},
 			"pub_key": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    false,
+				Optional:    true,
 				Description: "The path to the pub key to use",
 				DefaultFunc: func() (interface{}, error) {
 					return getDefaultGpgKeyFileName(GpgKeyTypePub), nil
@@ -40,7 +40,7 @@ func resourceSecrets() *schema.Resource {
 			},
 			"secret_key": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    false,
+				Optional:    true,
 				Description: "The path to the secret key to use",
 				DefaultFunc: func() (interface{}, error) {
 					return getDefaultGpgKeyFileName(GpgKeyTypeSecret), nil
