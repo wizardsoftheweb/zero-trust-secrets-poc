@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -148,10 +149,13 @@ func resourceSecretsRead(d *schema.ResourceData, m interface{}) error {
 	if nil != err {
 		return err
 	}
-	var parsedContents RandoResponse
-	err = json.Unmarshal(contents, &parsedContents)
+	var parsedContents RandoFile
+	err = json.Unmarshal([]byte(contents), &parsedContents)
 	if nil != err {
 		return err
+	}
+	if 0 == len(parsedContents.Secrets) {
+		return errors.New("No secrets loaded")
 	}
 	log.Println(string(contents))
 	err = d.Set("random_secrets", parsedContents.Secrets)

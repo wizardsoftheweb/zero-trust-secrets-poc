@@ -40,6 +40,10 @@ type RandoResponse struct {
 	Secrets []string `json:"message"`
 }
 
+type RandoFile struct {
+	Secrets []string `json:"secrets"`
+}
+
 func loadPubKey(pubKeyFileName string) string {
 	rawContents, _ := ioutil.ReadFile(pubKeyFileName)
 	contents := string(rawContents)
