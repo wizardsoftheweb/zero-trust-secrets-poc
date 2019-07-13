@@ -6,6 +6,10 @@ import (
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
+type RandoRequest struct {
+	Count int `json: count`
+}
+
 func main() {
 	r := gin.Default()
 	p := ginprometheus.NewPrometheus("gin")
@@ -16,10 +20,15 @@ func main() {
 		})
 	})
 
-	r.GET("/rando", func(c *gin.Context) {
-		response, _ := GenerateRandomString(47)
+	r.POST("/rando", func(c *gin.Context) {
+		var request RandoRequest
+		_ = c.BindJSON(&request)
+		RandomStrings := make([]string, request.Count)
+		for index := 0; index < request.Count; index++ {
+			RandomStrings[index], _ = GenerateRandomString(47)
+		}
 		c.JSON(200, gin.H{
-			"message": response,
+			"message": RandomStrings,
 		})
 	})
 	_ = r.Run() // listen and serve on 0.0.0.0:8080
