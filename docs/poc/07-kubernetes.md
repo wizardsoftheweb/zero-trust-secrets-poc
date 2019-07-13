@@ -80,7 +80,7 @@ The first thing to do is get the image in the registry we set up. If you're havi
 ```shell-session
 cd path/to/control-server
 docker build -t control-server .
-docker tag control-server localhost:5000:1.0.0
+docker tag control-server localhost:5000/control-server:1.0.0
 ```
 
 With that out the way, we can run kube stuff.
@@ -130,3 +130,9 @@ $ k logs $(k get po | awk '/^control-server/{ print $1; }')
 
 ## Simple Client
 
+Same process with the registry.
+```shell-session
+cd path/to/simple-client
+docker build -t simple-client .
+docker tag simple-client localhost:5000/simple-client:1.0.0
+```
