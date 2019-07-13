@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: control-server
+  name: control-server
+  namespace: zts-poc
+spec:
+  containers:
+    - image: control-server:latest
+      name: control-server
+      ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+  restartPolicy: Always
