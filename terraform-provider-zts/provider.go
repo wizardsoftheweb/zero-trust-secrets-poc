@@ -10,11 +10,12 @@ func Provider() *schema.Provider {
 			"etcd_host": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ZTS_ETCD_HOST", ""),
+				Description: "The etcd server to store config",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"zts_secrets": resourceServer(),
+			"zts_secrets":  resourceSecrets(),
+			"zts_gpg_keys": resourceGpgKeys(),
 		},
 	}
 }
