@@ -7,7 +7,9 @@ import (
 )
 
 type RandoRequest struct {
-	Count int `json: count`
+	Count  int    `json: count`
+	KvHost string `json: kv_host`
+	Key    string `json: key`
 }
 
 func main() {
