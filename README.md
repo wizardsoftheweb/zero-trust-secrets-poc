@@ -1,4 +1,4 @@
-# Zero Trust Configuration
+# Zero Trust Secrets
 
 The goal of this project is to combine a bunch of really neat stuff into a broke dev's security at rest solution.
 
@@ -10,7 +10,7 @@ At this stage in the project I'm completely ignoring normal authentication and f
 
 ## PoC Onboarding
 
-I'd going to attempt to tie these things together into something resembling a zero trust configuration service. That is, no secrets are stored unencrypted, no secrets are passed unencrypted, secrets are generated automatically per environment with an audit trail of access, and, most importantly, the end user most likely never sees the secrets. Those are my goals, at least.
+I'd going to attempt to tie these things together into something resembling a zero trust secret service. That is, no secrets are stored unencrypted, no secrets are passed unencrypted, secrets are generated automatically per environment with an audit trail of access, and, most importantly, the end user most likely never sees the secrets. Those are my goals, at least.
 
 This list is rather small because I'm still in the planning phase. MVP will probably be a web server with a k8s or TF component and a CLI.
 
