@@ -9,9 +9,11 @@ etcd:
 
 controlServer:
   replicaCount: 1
-  containerPort: 8080
+  clusterPort: 8080
+  targetPort: 8080
 
 simpleClient:
   desiredCount: 1
   replicaCount: 1
-  port: 4747
+  clusterPort: 4747
+  targetPort: 4747

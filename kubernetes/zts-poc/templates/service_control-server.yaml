@@ -10,8 +10,8 @@ spec:
   type: NodePort
   ports:
     - name: http
-      port: {{ .Values.controlServer.port }}
+      port: {{ .Values.controlServer.clusterPort }}
       protocol: TCP
-      targetPort: {{ .Values.controlServer.port }}
+      targetPort: {{ .Values.controlServer.targetPort }}
   selector:
     app: control-server

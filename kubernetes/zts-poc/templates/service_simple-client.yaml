@@ -12,9 +12,9 @@ spec:
   type: NodePort
   ports:
     - name: simple-client{{ $index }}-port
-      port: {{ $rootScope.Values.simpleClient.port }}
+      port: {{ $rootScope.Values.simpleClient.clusterPort }}
       protocol: TCP
-      targetPort: {{ $rootScope.Values.simpleClient.port }}
+      targetPort: {{ $rootScope.Values.simpleClient.targetPort }}
   selector:
     app: simple-client{{ $index }}
 {{ end }}
