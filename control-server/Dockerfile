@@ -20,9 +20,11 @@ COPY --from=builder /etc/passwd /etc/passwd
 # Copy our static executable
 COPY --from=builder /go/bin/server /go/bin/server
 
+RUN chown -R appuser /tmp
+
 USER appuser
 
 ENV PORT=8080
-EXPOSE 8080
+EXPOSE $PORT
 
 ENTRYPOINT ["/go/bin/server"]
