@@ -11,6 +11,8 @@ Each client that connects to the control server needs to be able to do these thi
 * Bootstrap its secrets by hitting `/rando` on the control server
 * Monitor its secrets and update them accordingly as they change
 
+For easy proof of updated conf, I'm gonna make the client another gin server.
+
 ## Initial Configuration
 
 This shouldn't require any explanation. The clients need to know where to store config.
