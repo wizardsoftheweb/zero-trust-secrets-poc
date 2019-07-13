@@ -49,11 +49,11 @@ func validateFileObject(isDirectory bool, objectSchemaString interface{}, k stri
 		return warnings, foundErrors
 	}
 	if isDirectory && !stat.IsDir() {
-		foundErrors = append(foundErrors, fmt.Errorf("%s is not a directory", directory))
+		foundErrors = append(foundErrors, fmt.Errorf("%s is not a directory", parsed))
 		return warnings, foundErrors
 	}
 	if !isDirectory && stat.IsDir() {
-		foundErrors = append(foundErrors, fmt.Errorf("%s is not a file", fileName))
+		foundErrors = append(foundErrors, fmt.Errorf("%s is not a file", parsed))
 		return warnings, foundErrors
 	}
 	return warnings, foundErrors
