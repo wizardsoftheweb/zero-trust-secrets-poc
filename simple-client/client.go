@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,7 +22,7 @@ import (
 var (
 	controlServerUrl = os.Getenv("RANDO_ENDPOINT")
 	secretsKey       = os.Getenv("SECRETS_KEY")
-	secretCount      = os.Getenv("SECRETS_COUNT")
+	secretCount, _   = strconv.Atoi(os.Getenv("SECRETS_COUNT"))
 	clientPort       = os.Getenv("PORT")
 	etcdHosts        = strings.Split(os.Getenv("ETCD_HOSTS"), ",")
 )
