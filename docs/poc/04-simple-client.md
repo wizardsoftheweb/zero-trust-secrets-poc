@@ -25,6 +25,10 @@ Ideally the secret keyring should be locked down. I dunno how to address that ye
 
 For the generation, I'm using [the basic example from `crypt`](https://github.com/xordataexchange/crypt/#create-a-key-and-keyring-from-a-batch-file) along with [my GPG export code](./02-crypt.md#create-keys).
 
+**NOTE:** I'm currently assuming that you've got a GPG flow. This has not been tested on a box without a GPG flow. That will come later when I containerize this. Which will probably be at the end of this doc. ¯\_(ツ)_/¯
+
+**NOTE:** This key has no passphrase. Notice the `%noprotection`. I don't have a way around that yet.
+
 ```text
 %echo Generating a configuration OpenPGP key
 Key-Type: default
