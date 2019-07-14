@@ -175,5 +175,120 @@ If you were paying attention above, I got around it for a little bit by using `b
 
 Once I decided to switch to R, the whole need to convert from CSV to JSON went away. R makes [this kind of ETL very easy](https://idc9.github.io/stor390/notes/dplyr/dplyr.html). I didn't initially use R because I didn't want to deal with yet another GUI or console. But while I was researching `jq` solutions, I ran into [`Rscript`](https://support.rstudio.com/hc/en-us/articles/218012917-How-to-run-R-scripts-from-the-command-line) which is brilliant and I don't know why I didn't think to research that before. If I had ever bothered to take the time and learn [the `pandas` flow](https://pandas.pydata.org/pandas-docs/stable/getting_started/comparison/comparison_with_r.html) I probably wouldn't have wasted so much time poking around with `jq`. That being said, I'm stoked because R is super easy to use.
 
+The full script is [here](/keys-from-scratch/benchmark-keygen/munge.R). I'd love feedback! I haven't touched R in forever. I graduated and moved away from R before [the `tidyverse` flow](https://github.com/tidyverse/tidyverse) showed up. Hadley Wickham has done some [really rad stuff](https://r4ds.had.co.nz/) with R in the years that I've been not doing math. If you see something that could be improved with the R stuff, let me know!
+
+The first thing I did was get the CSV loaded and sorted. I reordered the table and converted nanoseconds to seconds for easy consumption.
+
+```text
+    RSA Cipher   Hash Compr     Level  Duration
+1  4096 AES128 SHA224  None BestCompr 2.5726776
+2  2048 AES256 SHA512  None   BestSpd 0.2482865
+3  4096   3DES SHA384   ZIP BestCompr 6.7017688
+4  4096 AES128 SHA256  ZLIB BestCompr 1.6331067
+5  4096   3DES SHA224  ZLIB BestCompr 2.8825446
+6  4096   3DES SHA256  None   BestSpd 8.4028635
+7  2048 AES256 SHA256   ZIP   BestSpd 0.3520052
+8  4096 AES256 SHA512  None   BestSpd 3.7405410
+9  2048 AES256 SHA512  None  DefCompr 0.2594043
+10 4096  CAST5 SHA384  ZLIB  DefCompr 3.3297039
+```
+
+I got a little concerned because there's an insane amount of variability between different configs. To make sure I wasn't getting bad samples, I spent a lot of time tweaking how I was generating the CSV. Originally I was creating too many go routines, which gave me a lot of outliers and skewed my results toward longer processes. Cutting down the number of go routines greatly increased the total generation, unfortunately. It did give me better data, though.
+
+```text
+9600 records / 480 permutations = 20 records per permutation
+```
+
+Admittedly, that's not a lot. But I lost patience and started investigating anyway. Initially, I looked at all the results together, grouping by everything not `Duration` so I could get a median duration for each permutation. 
+```text
+     Hash Cipher Compr     Level  RSA medianDur meanDur durationSd coeffOfVar
+22 SHA512  CAST5  ZLIB   NoCompr 2048    0.3655  0.3660    0.08264      22.58
+23 SHA512 AES256  ZLIB   BestSpd 2048    0.3955  0.4218    0.14950      35.44
+24 SHA224 AES256  None BestCompr 2048    0.3309  0.3402    0.11920      35.05
+25 SHA224   3DES   ZIP   NoCompr 4096    4.2190  4.4420    1.84300      41.50
+26 SHA224  CAST5  None BestCompr 4096    3.2430  3.2790    1.35400      41.30
+27 SHA512 AES256   ZIP   NoCompr 4096    2.0980  3.1380    1.76800      56.35
+28 SHA256  CAST5  ZLIB BestCompr 2048    0.3897  0.3693    0.09691      26.24
+29 SHA384 AES192   ZIP   NoCompr 2048    0.3725  0.3952    0.16290      41.22
+30 SHA224 AES128  ZLIB   BestSpd 4096    3.3240  4.5850    3.17100      69.16
+31 SHA512 AES128  ZLIB   NoCompr 4096    2.8150  3.4080    1.65800      48.65
+```
+As you can see, I ended up calculating more because the median was not helpful. It's all over the place. In many cases, though, it's close enough to the mean to suggest some grouping. I've forgotten most of my stats, so I just ran with [the coefficient of variation](https://en.wikipedia.org/wiki/Coefficient_of_variation) as a check. It's
+```text
+(sample standard deviation / mean) * 100 := unitless percentage
+```
+The smaller the coefficient is, the less volatile the data. Volatile data, or a high variance, greatly reduces your ability to model and predict. In other words, it's pretty weak and can't be used as a good benchmark because it's way too random.
+
+I started doing some secondary searches to get a feel for what was going on. An easy target was the data where there's not compression algorithm. I didn't originally catch it, but, in theory, if the compression is gone, the compression level shouldn't affect anything. I [searched the codebase](https://github.com/golang/crypto/search?q=compression+path%3Aopenpgp&unscoped_q=compression+path%3Aopenpgp) to confirm that; it looks legit. I played with a few other groupings.
+
+* `Compr==None` grouping `Level`
+* `Compr==None` without grouping `Level`
+* grouping everything except for `Level` and `Duration`
+* grouping everything except for `Compr`. `Level`, and `Duration`
+
+The chart below shows the min, max, mean, and median of each set's coefficient of variation.
+
+```text
+            name      min      max     mean   median
+1  ComprNoneWLvl 23.22994 70.68649 40.43760 39.34945
+2 ComprNoneWoLvl 32.43989 55.05657 41.37174 40.90893
+3         SumLvl 31.26976 55.07023 42.08036 42.15585
+4    SumLvlCompr 34.31455 54.02505 42.27768 42.47947
+5            All 22.31983 73.04754 41.27713 40.92455
+```
+While some of the filters tightened the range, everything stayed around 40%, which is a lot of volatility. I decided to look at what data was doing what to see if that would lend any clues. I began by looking at values whose median duration was under five seconds that also had a coefficient of variation below 50%. That filter reduced the search space from 480 down to a whopping 414. I did notice a fairly obvious pattern, but it's fairly obvious because it was fairly obvious before this whole project started.
+```text
+     Hash Cipher Compr     Level  RSA medianDur meanDur durationSd coeffOfVar
+1  SHA224 AES128   ZIP   NoCompr 2048    0.3649  0.3482    0.07772      22.32
+2  SHA512  CAST5  ZLIB   NoCompr 2048    0.3655  0.3660    0.08264      22.58
+3  SHA256 AES256  None   NoCompr 2048    0.4540  0.4521    0.10500      23.23
+4  SHA224 AES128  ZLIB  DefCompr 4096    3.4770  3.3700    0.81520      24.19
+5  SHA512 AES192  None   NoCompr 2048    0.3152  0.3498    0.08544      24.43
+6  SHA256 AES192   ZIP   BestSpd 4096    3.0510  2.8920    0.71220      24.63
+7  SHA512 AES192  ZLIB   BestSpd 2048    0.3435  0.3442    0.08550      24.84
+8  SHA512 AES128   ZIP  DefCompr 2048    0.3216  0.3266    0.08208      25.13
+9  SHA224 AES256   ZIP   BestSpd 2048    0.3500  0.3402    0.08694      25.55
+10 SHA256  CAST5  ZLIB BestCompr 2048    0.3897  0.3693    0.09691      26.24
+11 SHA256 AES256   ZIP BestCompr 2048    0.3500  0.3572    0.09488      26.56
+12 SHA256   3DES   ZIP   NoCompr 2048    0.4073  0.4202    0.11280      26.84
+13 SHA384 AES192  ZLIB  DefCompr 2048    0.4343  0.4173    0.11300      27.09
+14 SHA512 AES192  ZLIB BestCompr 2048    0.3249  0.3395    0.09275      27.32
+15 SHA224 AES256   ZIP BestCompr 2048    0.3597  0.3622    0.10050      27.75
+16 SHA384 AES192  ZLIB   BestSpd 2048    0.3867  0.3822    0.10680      27.95
+17 SHA384   3DES  None BestCompr 2048    0.3379  0.3509    0.09905      28.22
+18 SHA384  CAST5  None   NoCompr 2048    0.3238  0.3244    0.09167      28.26
+19 SHA256 AES256  ZLIB BestCompr 2048    0.4047  0.4045    0.11480      28.39
+20 SHA384 AES128  ZLIB   BestSpd 2048    0.3459  0.3301    0.09417      28.53
+```
+It's significantly slower to use more bits. Larger numbers are harder to work with. Here, it's around 700% slower.
+```text
+                     min      max   mean   median
+medianDur % inc 419.1293 1425.708 735.49 723.3816
+```
+I'd personally like to run with more bits because it's more secure. That really depends on how slow the fastest 4096 keys are being made. For an ideal key, I'd like to see 4096 bits, a very quick gen time with a hard cap at five seconds, and some compression (either zip or zlib at some level above zero). For me to trust the prediction, the coefficient of variation should be below 40%. That filter gave me 41 results.
+```text
+     Hash Cipher Compr     Level  RSA medianDur meanDur durationSd coeffOfVar
+1  SHA512  CAST5  ZLIB BestCompr 4096     2.257   2.322     0.8883      38.26
+2  SHA384  CAST5   ZIP  DefCompr 4096     2.412   2.752     0.9587      34.84
+3  SHA224 AES256   ZIP  DefCompr 4096     2.501   2.568     0.8582      33.42
+4  SHA512   3DES   ZIP   BestSpd 4096     2.591   2.637     0.9358      35.48
+5  SHA224 AES128   ZIP BestCompr 4096     2.653   2.933     1.1300      38.53
+6  SHA512   3DES  ZLIB   BestSpd 4096     2.733   2.922     0.8866      30.34
+7  SHA224 AES192   ZIP  DefCompr 4096     2.752   3.092     1.1130      35.98
+8  SHA384  CAST5  ZLIB   BestSpd 4096     2.764   2.799     1.0740      38.37
+9  SHA256  CAST5   ZIP   BestSpd 4096     2.794   2.821     0.9141      32.40
+10 SHA224  CAST5   ZIP   BestSpd 4096     2.818   2.915     1.0660      36.56
+```
+Sorted by median generation, the fastest configs take more than two seconds. That's nuts. 
+```console
+$ bash -c 'trap times EXIT; gpg2 --armor --batch --gen-key gpg.batch'
+gpg: Generating a configuration OpenPGP key
+gpg: key A341F25CE1CF7CAA marked as ultimately trusted
+gpg: revocation certificate stored as '~/.gnupg/openpgp-revocs.d/B8E01B6233B41C705255DDCAA341F25CE1CF7CAA.rev'
+gpg: done
+0m0.004s 0m0.002s
+0m0.010s 0m0.000s
+```
+`gpg2` takes milliseconds to do almost the same task. That doesn't make any sense.
 
 ## Just Kidding
