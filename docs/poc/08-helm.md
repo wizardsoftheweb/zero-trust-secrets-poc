@@ -65,3 +65,42 @@ I noticed that, when the chart was first applied, things would go crazy for a bi
 
 I made it possible to deploy a variable amount of both `etcd` nodes and clients. It was an interesting exercise. It feels weird not increasing the number of replicas in the deployment. However, [the `etcd` manifest I used](https://github.com/etcd-io/etcd/blob/master/hack/kubernetes-deploy/etcd.yml) splits out each host into its own pod and service with all of them sharing the `etcd-client` service. Similarly, the simple clients are supposed to be pretend apps from all sorts of different sources. Also since each client is generated its own key on boot it can't be replicated. Yet.
 
+## Settings
+
+```yaml
+# I genuinely don't know why Helm does this
+nameOverride: ""
+# Ditto
+fullnameOverride: ""
+
+# Settings for the etcd deployment(s) and services
+etcd:
+  # number of nodes you want in the `etcd` cluster
+  clusterNodeCount: 2
+  # number of replicas of each node
+  replicaCount: 1
+  # the port for peer URLs
+  peerPort: 2380
+  # the port for client URLs
+  clientPort: 2379
+
+# Settings for the control server deployment and service
+controlServer:
+  # number of control replicas
+  replicaCount: 1
+  # the port exposed to the cluster via the service
+  clusterPort: 8080
+  # the port on each container; containerPort
+  targetPort: 8080
+
+# Setting for the simple client deployment(s) and service(s)
+simpleClient:
+  # number of different clients you'd like to spin up
+  desiredCount: 1
+  # number of replicas per client
+  replicaCount: 1
+  # the port exposed to the cluster via the service
+  clusterPort: 4747
+  # the port on each container; containerPort
+  targetPort: 4747
+```
