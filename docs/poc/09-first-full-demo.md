@@ -149,7 +149,6 @@ $ minikube service list --namespace zts-poc
 |           |                | http://192.168.99.104:31149    |
 | zts-poc   | simple-client0 | http://192.168.99.104:30602    |
 |-----------|----------------|--------------------------------|
-
 ```
 
 ### Verifying Secrets
@@ -221,7 +220,6 @@ $ prom2json $CONTROL/metrics \
 /ping       : 🍸🍸 2.00 
 /rando      : 🍸🍸🍸 3.00 
 
-
 $ prom2json $CLIENT/metrics \
     | jq -r '.[]|select(.name=="gin_requests_total")|[.metrics[]| {url: .labels.url, count: .value}]|group_by(.url)|[.[]|{url: .[0].url, count: map(.count | tonumber) | add}]|sort_by(.url)|.[]|.url + " " + (.count | tostring)' \
     | termgraph --title 'Requests Per Endpoint' --width 10 --custom-tick '🍸'
@@ -231,7 +229,6 @@ $ prom2json $CLIENT/metrics \
 /            : 🍸🍸🍸🍸 4.00 
 /favicon.ico : 🍸 1.00 
 /force-update: 🍸 1.00 
-
 ```
 
 I used [`termgraph`](https://github.com/mkaz/termgraph) for the pretty pictures
