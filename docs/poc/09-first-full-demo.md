@@ -42,3 +42,16 @@ This is the handwaviest resolution. I've got Prometheus metrics on everything. F
 
 To some extent, this is also stuck in the same limbo as the previous two. To monitor status you need to track everything. You also need to store things. Figuring out the storage question and defining a good way to track all the moving pieces will give this goal a better foundation.
 
+## The Demo
+
+### Prereqs
+
+You'll want [`kubectx`/`kubens`](https://github.com/ahmetb/kubectx).
+
+These are assumed to be run before anything else.
+```shell-session
+minikube start --profile pocDemo --cpus 4 --memory 4096 
+kubectx pocDemo
+alias k=kubectl
+```
+
