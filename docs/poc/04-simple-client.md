@@ -59,34 +59,34 @@ For the generation, I'm using [the basic example from `crypt`](https://github.co
     uid           [ultimate] CJ Harries (Zero Trust Secrets) <cj@wotw.pro>
     sub   rsa2048 2019-07-13 [E]
     ```
-    
+
     The ID is `something` here. To parse it in `bash`, we can use `awk`.
     ```shell-session
     $ gpg2 --list-keys 'Zero Trust Secrets' | awk '/^\s/{ print $1 }'
     something
     ```
-    
+
     However, in Go, I parse the output looking for this pattern:
     ```go
     var keyIdPattern, _ = regexp.Compile(`^\s+[^\s]*?\s*$`)
     ```
-    
+
     If the line is a match, I strip the whitespace and return that as the ID. If I can't determine an ID, the client panics. Whoops.
-    
+
 6. Using the key ID, the client checks the existence of each file in the specified directory.
 
     * If `.pubring.gpg` DNE,
-    
+
         ```shell-session
         $ gpg --output .pubring.gpg --armor --export something
         ```
-        
+
     * If `.secring.gpg` DNE,
-        
+
         ```shell-session
         $ gpg --output .secring.gpg --armor --export-secret-key something
         ```
-        
+
 ### Bootstrap Secrets
 
 I created a simple function to `POST` to the control server to simulate secret construction. This call requests for the local `etcd` host (`http://127.0.0.1:2379/`) to build a JSON file containing 10 strings at `/simple-client/secrets.json`. Every time the function is called, the secrets will be regenerated.
@@ -149,7 +149,7 @@ $ curl -s localhost:4747 | jq
     "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
     "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
   ]
-} 
+}
 ```
 Those secrets shouldn't change. If they do, something's wrong.
 ```shell-session
@@ -167,7 +167,7 @@ $ curl -s localhost:4747 | jq
     "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
     "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
   ]
-} 
+}
 ```
 You can force an update to change the secrets.
 ```shell-session
@@ -192,7 +192,7 @@ $ curl -s localhost:4747 | jq; curl -s localhost:4747/force-update | jq; curl -s
     "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
     "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
   ]
-} 
+}
 {
   "message": "Secrets were regenerated"
 }
@@ -209,7 +209,7 @@ $ curl -s localhost:4747 | jq; curl -s localhost:4747/force-update | jq; curl -s
     "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
     "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
   ]
-} 
+}
 ```
 However, if you wait for the refresh time, the secrets will be updated.
 ```shell-session
@@ -227,7 +227,7 @@ $ curl -s localhost:4747/force-update | jq; sleep 30; curl -s localhost:4747 | j
     "FL6Ru-Efc-kQOUwr7WIDHhBfLV_m3EA4ufn1JQnQ8FUmW9eKzAsS3zYTzHQwKRI=",
     "z7sO7hq7QrdEyFHR3GuMvo5cyXtGHQlCdpjW2OuR-gKFR83c55hLCspCUSjJZ7M="
   ]
-} 
+}
 {
   "message": "Secrets were regenerated"
 }

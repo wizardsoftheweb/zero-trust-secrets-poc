@@ -19,7 +19,7 @@ I noticed that, when the chart was first applied, things would go crazy for a bi
 1. The control server first waits for the `/v2/members` endpoint to respond to requests.
     ```bash
     wget -q -O - http://etcd-client.zts-poc.svc:2379/v2/members
-    ``` 
+    ```
     Once that's up, it snags all the `clientURLs`.
     ```shell-session
     $ wget -q -O - http://etcd-client.zts-poc.svc:2379/v2/members | jq
@@ -56,7 +56,7 @@ I noticed that, when the chart was first applied, things would go crazy for a bi
     }
     ```
     That might be a little naive, but I was having trouble with Viper not booting until all the nodes were up. I'll tweak it as I go.
-    
+
 2. The client needs both the `etcd` hosts and the control server. Since the control server is already waiting on the `etcd` boxes, the clients can just wait on the control server. Once it's up, it should return `pong` on the `/ping` endpoint.
     ```shell-session
     $ wget -q -O - http://control-server.zts-poc.svc:8080/ping | jq
@@ -64,7 +64,7 @@ I noticed that, when the chart was first applied, things would go crazy for a bi
       "message": "pong"
     }
     ```
-    
+
 ### Larger Deployments
 
 I made it possible to deploy a variable amount of both `etcd` nodes and clients. It was an interesting exercise. It feels weird not increasing the number of replicas in the deployment. However, [the `etcd` manifest I used](https://github.com/etcd-io/etcd/blob/master/hack/kubernetes-deploy/etcd.yml) splits out each host into its own pod and service with all of them sharing the `etcd-client` service. Similarly, the simple clients are supposed to be pretend apps from all sorts of different sources. Also since each client is generated its own key on boot it can't be replicated. Yet.

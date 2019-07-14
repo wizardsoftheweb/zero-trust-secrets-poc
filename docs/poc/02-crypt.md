@@ -13,7 +13,7 @@ go install github.com/xordataexchange/crypt/bin/crypt
 
 A quick note before you keep reading. I'm sharing basically every step of my MVP key gen process which means, you guessed it, these keys are worthless now. The process is great but only if you keep it to yourself.
 
-I'm running a fairly recent version with plenty of algorithms so I'm going to experiment a little bit with what I can use. 
+I'm running a fairly recent version with plenty of algorithms so I'm going to experiment a little bit with what I can use.
 
 ```shell-session
 $ gpg2 --version
@@ -42,11 +42,11 @@ Please select what kind of key you want:
    (2) DSA and Elgamal
    (3) DSA (sign only)
    (4) RSA (sign only)
-Your selection? 
+Your selection?
 ```
 However, in order to do that, we'll need to escalate our perms.
 ```
-$ man gpg2 | grep -A 8 -- --expert 
+$ man gpg2 | grep -A 8 -- --expert
 --expert
 --no-expert
       Allow the user to do certain nonsensical or "silly" things  like
@@ -96,7 +96,7 @@ Please select what kind of key you want:
    (4) RSA (sign only)
 Your selection? 1
 RSA keys may be between 1024 and 4096 bits long.
-What keysize do you want? (2048) 
+What keysize do you want? (2048)
 Requested keysize is 2048 bits
 
 $ gpg2 -k zero-trust-configuration

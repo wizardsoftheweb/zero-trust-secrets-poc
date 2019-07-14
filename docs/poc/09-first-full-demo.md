@@ -50,7 +50,7 @@ You'll want [`kubectx`/`kubens`](https://github.com/ahmetb/kubectx).
 
 These are assumed to be run before anything else.
 ```shell-session
-minikube start --profile pocDemo --cpus 4 --memory 4096 
+minikube start --profile pocDemo --cpus 4 --memory 4096
 kubectx pocDemo
 alias k=kubectl
 ```
@@ -215,10 +215,10 @@ $ prom2json $CONTROL/metrics \
 
 # Requests Per Endpoint
 
-/           : 🍸 1.00 
-/favicon.ico: 🍸 1.00 
-/ping       : 🍸🍸 2.00 
-/rando      : 🍸🍸🍸 3.00 
+/           : 🍸 1.00
+/favicon.ico: 🍸 1.00
+/ping       : 🍸🍸 2.00
+/rando      : 🍸🍸🍸 3.00
 
 $ prom2json $CLIENT/metrics \
     | jq -r '.[]|select(.name=="gin_requests_total")|[.metrics[]| {url: .labels.url, count: .value}]|group_by(.url)|[.[]|{url: .[0].url, count: map(.count | tonumber) | add}]|sort_by(.url)|.[]|.url + " " + (.count | tostring)' \
@@ -226,9 +226,9 @@ $ prom2json $CLIENT/metrics \
 
 # Requests Per Endpoint
 
-/            : 🍸🍸🍸🍸 4.00 
-/favicon.ico : 🍸 1.00 
-/force-update: 🍸 1.00 
+/            : 🍸🍸🍸🍸 4.00
+/favicon.ico : 🍸 1.00
+/force-update: 🍸 1.00
 ```
 
 I used [`termgraph`](https://github.com/mkaz/termgraph) for the pretty pictures

@@ -9,7 +9,7 @@ minikube start
 kubectl config use-context minikube
 eval $(minikube docker-env)
 alias k=kubectl
-docker run -d -p 5000:5000 --restart=always --name registry registry:2 
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
 ```
 
 ## Namespace
@@ -63,15 +63,15 @@ failed to check the health of member cf1d15c5d194b5c9 on http://etcd0:2379: Get 
 member cf1d15c5d194b5c9 is unreachable: [http://etcd0:2379] are all unreachable
 cluster is unhealthy
 
-$ etcdctl --endpoints 'http://192.168.99.101:30646' --no-sync ls / 
+$ etcdctl --endpoints 'http://192.168.99.101:30646' --no-sync ls /
 
 
 $ etcdctl --endpoints 'http://192.168.99.101:30646' --no-sync mkdir /test
 
-$ etcdctl --endpoints 'http://192.168.99.101:30646' --no-sync ls / 
+$ etcdctl --endpoints 'http://192.168.99.101:30646' --no-sync ls /
 /test
 
-$ etcdctl --endpoints 'http://192.168.99.101:30646' --no-sync rmdir /test 
+$ etcdctl --endpoints 'http://192.168.99.101:30646' --no-sync rmdir /test
 ```
 
 ## Control Server
@@ -89,7 +89,7 @@ $ cd path/to/kubernetes
 $ k apply -f deployment_control-server.yaml
 deployment.apps/control-server created
 
-$ k apply -f service_control-server.yaml 
+$ k apply -f service_control-server.yaml
 service/control-server created
 
 $ k get svc
@@ -98,7 +98,7 @@ control-server   NodePort   10.106.82.166   <none>        8080:30932/TCP        
 etcd-client      NodePort   10.96.124.171   <none>        2379:30646/TCP                  60m
 etcd0            NodePort   10.97.161.16    <none>        2379:31823/TCP,2380:30421/TCP   61m
 
-$ minikube service --namespace zts-poc list 
+$ minikube service --namespace zts-poc list
 |-----------|----------------|--------------------------------|
 | NAMESPACE |      NAME      |              URL               |
 |-----------|----------------|--------------------------------|
@@ -113,7 +113,7 @@ $ curl -s 'http://192.168.99.101:30932/ping' | jq
   "message": "pong"
 }
 
-$ k logs $(k get po | awk '/^control-server/{ print $1; }') 
+$ k logs $(k get po | awk '/^control-server/{ print $1; }')
 [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
 
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
@@ -139,7 +139,7 @@ docker tag simple-client localhost:5000/simple-client:1.0.0
 With that done, we can wire up the last part!
 ```shell-session
 $ cd path/to/kubernetes
-$ k apply -f deployment_simple-client.yaml 
+$ k apply -f deployment_simple-client.yaml
 deployment.apps/simple-client created
 
 $ k apply -f service_simple-client0.yaml
@@ -152,7 +152,7 @@ etcd-client      NodePort   10.96.124.171   <none>        2379:30646/TCP        
 etcd0            NodePort   10.97.161.16    <none>        2379:31823/TCP,2380:30421/TCP   122m
 simple-client0   NodePort   10.106.96.139   <none>        4747:30745/TCP                  32m
 
-$ minikube service --namespace zts-poc list 
+$ minikube service --namespace zts-poc list
 |-----------|----------------|--------------------------------|
 | NAMESPACE |      NAME      |              URL               |
 |-----------|----------------|--------------------------------|
@@ -220,7 +220,7 @@ $ curl -s 'http://192.168.99.101:30745' | jq; \
   ]
 }
 
-$ k logs $(k get po | awk '/^simple-client/{ print $1; }') 
+$ k logs $(k get po | awk '/^simple-client/{ print $1; }')
 /tmp/509691206
 gpg: Generating a configuration OpenPGP key
 gpg: key 80293F442B84822C marked as ultimately trusted

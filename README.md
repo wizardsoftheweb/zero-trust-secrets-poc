@@ -14,7 +14,7 @@ I'd going to attempt to tie these things together into something resembling a ze
 
 This list is rather small because I'm still in the planning phase. MVP will probably be a web server with a k8s or TF component and a CLI.
 
-This first phase is pretty small. I want to get a quick MVP out that 
+This first phase is pretty small. I want to get a quick MVP out that
 
 1) provides an automated and centralized secret generation service,
 2) provides different secrets to each environment while still remaining in the same pipeline,

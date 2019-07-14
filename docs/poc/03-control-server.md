@@ -22,7 +22,7 @@ I am going to build a microservice that does exactly these things. Some of them 
 
 I'm really interesting in messing with Gin, so I'm not going to architect anything further now. This section is called Round One for a reason. I'm building the publisher right now but I haven't defined what motivates the publisher. I also haven't defined how subscribers interact.
 
-Stretch goal is [messaging in proto3](https://developers.google.com/protocol-buffers/docs/proto3) instead of JSON. 
+Stretch goal is [messaging in proto3](https://developers.google.com/protocol-buffers/docs/proto3) instead of JSON.
 
 ## What This is Not (Yet)
 
@@ -72,7 +72,7 @@ Assume I have a control server running at `localhost:8080` with an `etcd` endpoi
         "pub_key": "pub\nkey\ncontents"
     }
     ```
-    
+
     response:
     ```json
     {
@@ -105,7 +105,7 @@ Assume I have a control server running at `localhost:8080` with an `etcd` endpoi
     "OVN2pLlwn5fC7t_d3C9gsY6xwZe6z5KHxH8V9i1dwsrAeNjYoIbXVHlF_kiXkkg=",
     "DL9v-sVoacQA3Pqf3vjb38Av3LXlmA5ncslMBSgTb6vDz9dqGjmxa6M9KSrSEkU="]}
     ```
-    
+
     (the output might be a bit wonky; I changed it in a later section)
 ### Currently Missing
 

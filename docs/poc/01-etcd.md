@@ -45,7 +45,7 @@ ETCDCTL_API=3 /srv/etcd/etcdctl version
 
 u_g_id=$((16#$(openssl rand -hex 2)))
 (getent group $u_g_id || getent passwd $u_g_id) || groupadd -g $u_g_id etcd && useradd -u $u_g_id -g etcd -d /srv/etcd -s /bin/false etcd
-chown -R etcd:etcd /srv/etcd 
+chown -R etcd:etcd /srv/etcd
 ```
 
 This didn't seem to install any sort of unit file so after messing with building my own from Stack Overflow and fighting SELinux on everything I just went with this solution.

@@ -18,7 +18,7 @@ It provides two resources:
 
 ### `zts_secrets`
 
-This resource provides another way to get at the control server's `/rando` endpoint. It needs to know the `etcd` host and key to store secrets in. It assumes a common secret count and defaults to the default key ring names in the current directory unless new values are passed in. 
+This resource provides another way to get at the control server's `/rando` endpoint. It needs to know the `etcd` host and key to store secrets in. It assumes a common secret count and defaults to the default key ring names in the current directory unless new values are passed in.
 
 ```hcl-terraform
 resource "zts_secrets" "sample" {
@@ -51,10 +51,10 @@ output "random_secrets" {
 
 ```shell-session
 $ cd ~/example
-$ etcdctl --endpoint 'http://127.0.0.1:2379/' --no-sync get /test-client/secrets.json 
+$ etcdctl --endpoint 'http://127.0.0.1:2379/' --no-sync get /test-client/secrets.json
 Error:  100: Key not found (/test-client/secrets.json) [54]
 
-$ crypt get -endpoint='http://127.0.0.1:2379' /test-client/secrets.json | jq 
+$ crypt get -endpoint='http://127.0.0.1:2379' /test-client/secrets.json | jq
 100: Key not found (/test-client/secrets.json) [54]
 
 $ terraform plan
@@ -137,10 +137,10 @@ random_secrets = [
   "pHQphurKiQCoP9aQBZPWFwJkxly_E0aVAG0mLWso9yAoW5WhJj5yTTh56JRlSLU=",
 ]
 
-$ etcdctl --endpoint 'http://127.0.0.1:2379/' --no-sync get /test-client/secrets.json 
+$ etcdctl --endpoint 'http://127.0.0.1:2379/' --no-sync get /test-client/secrets.json
 wcBMA9HSmdzRsOKxAQgAvbZTG3NWpstHrMYP0uzOKjn8fosdFKGTG9tg9SyLxFan3shTlPDp9OE6rNh6rmHzZ4MMePDKNcRxOWyQB196KY07HFDqUhyHkG15+6lxwbOwm40yJkcEWzQhSRaefy0lurjSktfnynkVd+Da3DHsxbgcu8x9mXA1n3VvHFMaAFSfzfIb89W+k1yZ/eTv1ZFvTdo4xuNv6y7vzOrGJkwbtzjL6Wc4v/Xg/MTsH+rRlxZ/eRfQTdiMMOUKE8pBFPpdl8gVDBNzNzmj+Bkfkouxzom6kwt3nsi0rXATuMYWzNCwZX7u7gy6DUTfd4FyYI6/C4pfxNvHCk61Ds7IU4Ew5NLgAeRW/KdFW5Bz5SXO7k5J/94G4Zyf4JXgneHLdOAf4jsqcbbggeMrx+v6hj3Oh+DL4f5/4LvnfLchBVppDarcTIl14YiCQFwurDDLzpkwwWu0uEIAGwxrDtlDDqwwPXqfiiYRbitBlMTg/iRNbKZ7VZo08y1Yl4Evf6u8st71OGBxwHks3DZ7VxsqxjLECVWIL4N/ftElXuNMXbZq6DR3LAIWI0v/E2tmOdCCKyUy2LBd7Vq/EW3gfOZA7dY7Q6VMx3X0CoJzSTKMIK9e2VyOmmpIRAB2xllSL6ym2pZ4L2B4AsfOkS36ESZ83tKaznQuiSmYz/QNW5tH4H7lytZSuoeAxmlZw9g2mJYnJYAKOczcIB6N740PI5XCmSLg5uTTUVtXHo3QFk1ptDrMsuoI4IrnsVxD5iWjez8dYHooDXFNhNGG/SKqhc521woo18HOhw08+oEFgiuziG4MwWPnBuzkOeLndWykqNygb9+0ID51VxewAnq5rdw2aNtjeeTxGvqGhlU/XKO2XxaM7yZpBDcjL1bnWLwPDnyrAGbgewKblYtKaVABt3lB7EzD8qJzpSngTuYByytV6yfzRuBU9PaElcBy7cwrM0HrwHZsQ31qzR6jikwrNw4BUW1DEyOP3drZ+vS4RW7hvGJ1QWkQqW4ow3s24NTlNFG+nCpYfrJev8WVKf8csce0CZ+MK5FYrtmNFS5p+ofgweTrYO/obFKLGplqHDCSCCR64E3mUXx1Z7rhI5gvlPcP23hnPHNDf+0/Ky5V21Zm1TOfh0F+jSwcVWy0Uf/r09szi8GxDDwYTfu58HjVGOqEKBU/0+DA4qYtLFTgD+JF69z64Jnjlp9uB5hgA8jg0OQe6u1xuJvv3wDNgcVrOfy14u5Pd+zheVAA
 
-$ crypt get -endpoint='http://127.0.0.1:2379' /test-client/secrets.json | jq 
+$ crypt get -endpoint='http://127.0.0.1:2379' /test-client/secrets.json | jq
 {
   "secrets": [
     "0280V3PXnpgpms8_WufMXzH_K5FnIFRDcKjGc8EGR8vc71TK4UVmZQ07bP6HbEM=",
@@ -218,10 +218,10 @@ zts_secrets.test: Destruction complete after 0s
 
 Destroy complete! Resources: 1 destroyed.
 
-$ etcdctl --endpoint 'http://127.0.0.1:2379/' --no-sync get /test-client/secrets.json 
+$ etcdctl --endpoint 'http://127.0.0.1:2379/' --no-sync get /test-client/secrets.json
 Error:  100: Key not found (/test-client/secrets.json) [56]
 
-$ crypt get -endpoint='http://127.0.0.1:2379' /test-client/secrets.json | jq 
+$ crypt get -endpoint='http://127.0.0.1:2379' /test-client/secrets.json | jq
 100: Key not found (/test-client/secrets.json) [56]
 ```
 
@@ -236,7 +236,7 @@ resource "zts_gpg_keys" "sample" {
   directory  = "~/example"            # Optional; default is cwd
   pub_key    = "some-pub-basename"    # Optional; default is .pubring.gpg
   secret_key = "some-secret-basename" # Optional; default is .secring.gpg
-  
+
   batch {
     name    = "CJ Harries"            # Required
     email   = "cj@wotw.pro"           # Required
