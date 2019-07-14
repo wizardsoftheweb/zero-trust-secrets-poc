@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -30,19 +31,12 @@ var (
 )
 
 type CreationSuite struct {
+	BaseSuite
 }
 
 var _ = Suite(&CreationSuite{})
 
-func (s *CreationSuite) TestForProperGenericConfig(c *C) {
-	config := newGenericConfig()
-	c.Assert(config.DefaultCipher, Equals, baseCipher)
-	c.Assert(config.DefaultCompressionAlgo, Equals, commonCompression)
-	c.Assert(config.CompressionConfig.Level, Equals, baseLevel)
-	c.Assert(config.RSABits, Equals, baseLevel)
-}
-
-func benchmarkSingleConfig( //nolint:unused
+func benchmarkSingleConfig(
 	cipherFunc packet.CipherFunction,
 	compressionAlgo packet.CompressionAlgo,
 	compressionLevel,
@@ -68,8 +62,9 @@ func benchmarkSingleConfig( //nolint:unused
 		if nil != err {
 			log.Fatal("whoops")
 		}
-		storingEntitiesToMitigateCompilerTricks = entity
 	}
+	storingEntitiesToMitigateCompilerTricks = entity
+	_ = fmt.Sprintf("%v", storingEntitiesToMitigateCompilerTricks)
 }
 
 func (s *CreationSuite) BenchmarkCreationOfAES128xZLIBxBestSpeedx2048(c *C) {
