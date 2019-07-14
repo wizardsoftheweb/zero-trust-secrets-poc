@@ -1,6 +1,5 @@
 #!/usr/bin/env Rscript
 library(tidyverse)
-library(dplyr)
 ciphers <- c("3DES", "CAST5", "AES128", "AES192", "AES256")
 compressionAlgos <- c("None", "ZIP", "ZLIB")
 levels <- c("NoCompression", "BestSpeed", "BestCompression", "DefaultCompression")
@@ -67,7 +66,7 @@ noComprWithLevel <- filter(testDf, as.character(Compr) == "None") %>%
   )
 
 
-noComprWithoutLevel <- filter(testDf, as.character(Compr) == "None") %>%
+noComprWithWoLevel <- filter(testDf, as.character(Compr) == "None") %>%
   group_by(
     Hash,
     Cipher,
@@ -116,7 +115,7 @@ fresh <- tibble(
   min = sapply(
     c(
       noComprWithLevel[, "coeffOfVar"],
-      noComprWithLevel[, "coeffOfVar"],
+      noComprWithWoLevel[, "coeffOfVar"],
       summariseLevel[, "coeffOfVar"],
       summariseLevelCompr[, "coeffOfVar"],
       everything[, "coeffOfVar"]
@@ -126,7 +125,7 @@ fresh <- tibble(
   max = sapply(
     c(
       noComprWithLevel[, "coeffOfVar"],
-      noComprWithLevel[, "coeffOfVar"],
+      noComprWithWoLevel[, "coeffOfVar"],
       summariseLevel[, "coeffOfVar"],
       summariseLevelCompr[, "coeffOfVar"],
       everything[, "coeffOfVar"]
@@ -136,7 +135,7 @@ fresh <- tibble(
   mean = sapply(
     c(
       noComprWithLevel[, "coeffOfVar"],
-      noComprWithLevel[, "coeffOfVar"],
+      noComprWithWoLevel[, "coeffOfVar"],
       summariseLevel[, "coeffOfVar"],
       summariseLevelCompr[, "coeffOfVar"],
       everything[, "coeffOfVar"]
@@ -146,7 +145,7 @@ fresh <- tibble(
   median = sapply(
     c(
       noComprWithLevel[, "coeffOfVar"],
-      noComprWithLevel[, "coeffOfVar"],
+      noComprWithWoLevel[, "coeffOfVar"],
       summariseLevel[, "coeffOfVar"],
       summariseLevelCompr[, "coeffOfVar"],
       everything[, "coeffOfVar"]
@@ -161,6 +160,8 @@ fasterKeys <- filter(everything, coeffOfVar < 50, medianDur < 5) %>%
   arrange(coeffOfVar, medianDur, desc(RSA)) %>%
   mutate_if(is.numeric, signif, digits = 4)
 
+print(nrow(everything))
+print(nrow(fasterKeys))
 print.data.frame(fasterKeys[1:20, ])
 
 fastHighRsa <- filter(
@@ -175,3 +176,17 @@ fastHighRsa <- filter(
   mutate_if(is.numeric, signif, digits = 4)
 
 print.data.frame(fastHighRsa)
+
+split <- arrange(everything, Hash, Cipher, Compr, Level, RSA)
+smallBits <- pull(filter(split, as.character(RSA) == "2048"), medianDur)
+bigBits <- pull(filter(split, as.character(RSA) == "4096"), medianDur)
+
+bitPercentIncrease <- (100 * (bigBits - smallBits) / smallBits)
+
+print.data.frame(tibble(
+  name = c("medianDur % inc"),
+  min = c(min(bitPercentIncrease)),
+  max = c(max(bitPercentIncrease)),
+  mean = c(mean(bitPercentIncrease)),
+  median = c(median(bitPercentIncrease))
+))
