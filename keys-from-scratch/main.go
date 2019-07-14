@@ -15,10 +15,10 @@ const (
 	name              = "CJ Harries"
 	email             = "cj@wotw.pro"
 	comment           = "Home Brew ZTS PoC"
-	baseHash          = crypto.SHA256
+	baseHash          = crypto.SHA512
 	baseCipher        = packet.CipherCAST5
 	commonCompression = packet.CompressionZLIB
-	baseLevel         = packet.BestSpeed
+	baseLevel         = packet.BestCompression
 	minimumRsaBits    = 4096
 )
 
