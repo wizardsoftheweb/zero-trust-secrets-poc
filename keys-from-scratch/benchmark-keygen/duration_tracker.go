@@ -24,8 +24,14 @@ func (d *DataLogger) Flush() {
 	d.logger.Flush()
 }
 
+// Updated with commentary from reddit
+// https://www.reddit.com/r/golang/comments/46fdef/help_appending_a_slice_to_next_row_in_csv_file/
 func NewDataLogger(csvPath string) (*DataLogger, error) {
-	csvFile, err := os.Create(csvPath)
+	csvFile, err := os.OpenFile(
+		csvPath,
+		os.O_WRONLY|os.O_CREATE|os.O_APPEND,
+		0644,
+	)
 	if err != nil {
 		return nil, err
 	}

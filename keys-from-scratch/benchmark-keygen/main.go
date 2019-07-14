@@ -17,7 +17,7 @@ const (
 	nameForBenchmarks    = "Rick James"
 	commentForBenchmarks = "ZTS Benchmark"
 	emailForBenchmarks   = "rick.james@wotw.pro"
-	repetitionCount      = 10
+	repetitionCount      = 20
 	maxConsectureFailure = 10
 )
 
@@ -109,10 +109,10 @@ func generateKey(
 	return end.Sub(start), nil
 }
 
-func generateKeys(logger *DataLogger, group *sync.WaitGroup, hashIndex, cipherIndex int) {
-	for compressionAlgoIndex := 0; compressionAlgoIndex < len(compressionAlgos); compressionAlgoIndex++ {
-		for levelIndex := 0; levelIndex < len(compressionLevels); levelIndex++ {
-			for rsaIndex := 0; rsaIndex < len(rsaBits); rsaIndex++ {
+func generateKeys(logger *DataLogger, group *sync.WaitGroup, compressionAlgoIndex, rsaIndex int) {
+	for cipherIndex := 0; cipherIndex < len(cipherFuncs); cipherIndex++ {
+		for hashIndex := 0; hashIndex < len(hashFuncs); hashIndex++ {
+			for levelIndex := 0; levelIndex < len(compressionLevels); levelIndex++ {
 				runsLeft := repetitionCount
 				currentErrorCount := 0
 				for 0 < runsLeft {
@@ -146,6 +146,7 @@ func generateKeys(logger *DataLogger, group *sync.WaitGroup, hashIndex, cipherIn
 					}
 				}
 			}
+
 		}
 	}
 }
@@ -164,12 +165,12 @@ func main() {
 	if nil != err {
 		log.Fatal(err)
 	}
-	rowCount := repetitionCount * len(cipherFuncs) * len(compressionAlgos) * len(compressionLevels) * len(rsaBits)
+	rowCount := repetitionCount * len(hashFuncs) * len(cipherFuncs) * len(compressionAlgos) * len(compressionLevels) * len(rsaBits)
 	group := &sync.WaitGroup{}
 	group.Add(rowCount)
-	for hashIndex := 0; hashIndex < len(hashFuncs); hashIndex++ {
-		for cipherIndex := 0; cipherIndex < len(cipherFuncs); cipherIndex++ {
-			go generateKeys(dataLogger, group, hashIndex, cipherIndex)
+	for compressionAlgoIndex := 0; compressionAlgoIndex < len(compressionAlgos); compressionAlgoIndex++ {
+		for rsaIndex := 0; rsaIndex < len(rsaBits); rsaIndex++ {
+			go generateKeys(dataLogger, group, compressionAlgoIndex, rsaIndex)
 		}
 	}
 	group.Wait()
