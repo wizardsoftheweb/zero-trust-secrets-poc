@@ -11,3 +11,4 @@ Docs get added here as I write them.
 5. [Terraform provider tangent](./05-terraform-provider.md): A custom provider can be created to interact with the control server.
 6. [GPG in a container](./06-client-container.md): Clients need `gpg`
 7. [Starter Kube](./07-kubernetes.md): Everything is containerized and running in a kube cluster
+8. [Why the Helm not?](./08-helm.md): put the PoC in a Helm chart to show it off
