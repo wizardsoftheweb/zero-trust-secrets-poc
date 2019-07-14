@@ -157,3 +157,23 @@ $ jq --arg NANO "$((10**9))" \
   }
 ]
 ```
+
+### `jq` Fun
+
+I got really frustrated with `jq-1.6` and its reliance on some `C` libraries that apparently play differently enough on RHEL systems that it won't work. There's a chance I tried every permutation from [the README's instructions](https://github.com/stedolan/jq/blob/master/README.md) without any luck. I also followed the instructions on [the `jq` site](https://stedolan.github.io/jq/download/#from_source_on_linux_os_x_cygwin_and_other_posixlike_operating_systems) but had the same problems. Using the binary release doesn't work either. Using the release from the Fedora repos doesn't work either. All I wanted to do was calculate a power!
+
+```shell-session
+$ jq 'pow(10,2)'
+jq: error: pow/1 is not defined at <top-level>, line 1:
+pow(10, 2)
+jq: 1 compile error
+```
+
+If you were paying attention above, I got around it for a little bit by using `bash` math. That's unpleasant and not a great pipeline. So I switched to R.
+
+### This Time It's Actual
+
+Once I decided to switch to R, the whole need to convert from CSV to JSON went away. R makes [this kind of ETL very easy](https://idc9.github.io/stor390/notes/dplyr/dplyr.html). I didn't initially use R because I didn't want to deal with yet another GUI or console. But while I was researching `jq` solutions, I ran into [`Rscript`](https://support.rstudio.com/hc/en-us/articles/218012917-How-to-run-R-scripts-from-the-command-line) which is brilliant and I don't know why I didn't think to research that before. If I had ever bothered to take the time and learn [the `pandas` flow](https://pandas.pydata.org/pandas-docs/stable/getting_started/comparison/comparison_with_r.html) I probably wouldn't have wasted so much time poking around with `jq`. That being said, I'm stoked because R is super easy to use.
+
+
+## Just Kidding
