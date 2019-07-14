@@ -85,3 +85,75 @@ There's a lot of annoying work just to get the data in usable form.
 ### Actual Pass
 
 Instead of fighting an uphill battle, I wrote a quick benchmark tool that writes out to a CSV for parsing. Assuming I don't move it later, it's [viewable here](/keys-from-scratch/benchmark-keygen). It's just a bunch of data and loops. If you see something I can do to make it better, let me know!
+
+I stored the data in a CSV because it's an easy filetype to share between go routines. You can add to it without worrying about what's already there. It's also not a complicated write. Here's a small sample.
+```csv
+duration,hash,cipher,compAlgo,compLevel,rsa
+884796935,SHA224,AES128,None,BestCompression,2048
+9491934849,SHA256,3DES,None,BestSpeed,4096
+4627713298,SHA384,AES128,None,BestSpeed,4096
+812300430,SHA224,AES128,None,BestCompression,2048
+1939383322,SHA224,AES256,None,BestCompression,2048
+950667819,SHA512,3DES,None,BestCompression,2048
+769944070,SHA256,3DES,None,BestCompression,2048
+12228898917,SHA384,3DES,None,BestSpeed,4096
+```
+
+However, like the log file, munging a CSV is no fun. I've been playing a lot with `jq` recently and found [a solid solution that already exists](https://stackoverflow.com/a/45888945/2877698)
+
+```shell-session
+$ jq -s -R \
+    '[
+        [ split("\n")[] | split(",") ] \
+        | { \
+            h:["runtime","hash","cipher","compression","level","rsa"], \
+            v:.[1:][] \
+           } \
+        | [.h, (.v|map(tonumber?//.))] \
+        | [transpose[] \
+        | {key:.[0],value:.[1]}] \
+        | from_entries \
+    ]' data-to-munge.csv > data-to-munge.json
+[
+  {
+    "runtime": 21297510160,
+    "hash": "SHA224",
+    "cipher": "AES192",
+    "compression": "None",
+    "level": "BestCompression",
+    "rsa": 4096
+  },
+  {
+    "runtime": 10824945138,
+    "hash": "SHA512",
+    "cipher": "AES192",
+    "compression": "None",
+    "level": "DefaultCompression",
+    "rsa": 4096
+  }
+]
+
+$ jq --arg NANO "$((10**9))" \
+    '[ \
+        .[] \
+        | .runtime = .runtime / ($NANO | tonumber) \
+    ]' data-to-munge.json > divided-data.json
+[
+  {
+    "runtime": 20.235348704,
+    "hash": "SHA512",
+    "cipher": "AES128",
+    "compression": "None",
+    "level": "BestCompression",
+    "rsa": 4096
+  },
+  {
+    "runtime": 0.987810184,
+    "hash": "SHA224",
+    "cipher": "AES128",
+    "compression": "None",
+    "level": "DefaultCompression",
+    "rsa": 2048
+  }
+]
+```
