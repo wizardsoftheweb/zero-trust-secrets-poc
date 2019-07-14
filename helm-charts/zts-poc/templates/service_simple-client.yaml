@@ -1,0 +1,20 @@
+{{- $rootScope := . -}}
+{{ range $index, $error := until (.Values.simpleClient.desiredCount | int) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+{{ include "zts-poc.labels" $rootScope | indent 4 }}
+  name: simple-client{{ $index }}
+  namespace: {{ include "zts-poc.name" $rootScope }}
+spec:
+  type: NodePort
+  ports:
+    - name: simple-client{{ $index }}-port
+      port: {{ $rootScope.Values.simpleClient.clusterPort }}
+      protocol: TCP
+      targetPort: {{ $rootScope.Values.simpleClient.targetPort }}
+  selector:
+    app: simple-client{{ $index }}
+{{ end }}

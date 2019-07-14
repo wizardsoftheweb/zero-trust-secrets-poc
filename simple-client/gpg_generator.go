@@ -32,7 +32,7 @@ func RunGpgBatch() {
 		batchFile.Name(),
 	}
 	response := ExecCmd(command...)
-	fmt.Println(response.String())
+	log.Printf("Response: %s", response.String())
 }
 
 func CheckIfKeyExists() bool {

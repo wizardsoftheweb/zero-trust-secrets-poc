@@ -1,0 +1,56 @@
+{{- $rootScope := . -}}
+{{ $svcName := include "zts-poc.name" . }}
+{{ range $index, $error := until (.Values.etcd.clusterNodeCount | int) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: etcd
+    etcd_node: etcd{{ $index }}
+{{ include "zts-poc.labels" $rootScope | indent 4 }}
+  name: etcd{{ $index }}
+  namespace: {{ include "zts-poc.name" $rootScope }}
+spec:
+  replicas: {{ $rootScope.Values.etcd.replicaCount }}
+  selector:
+    matchLabels:
+      app: etcd
+      etcd_node: etcd{{ $index }}
+  template:
+    metadata:
+      labels:
+        app: etcd
+        etcd_node: etcd{{ $index }}
+    spec:
+      containers:
+        - command:
+            - /usr/local/bin/etcd
+            - --name
+            - etcd{{ $index }}
+            - --initial-advertise-peer-urls
+            - {{ template "etcd-node" (list $index $svcName $rootScope.Values.etcd.peerPort) }}
+            - --listen-peer-urls
+            - http://0.0.0.0:{{ $rootScope.Values.etcd.peerPort }}
+            - --listen-client-urls
+            - http://0.0.0.0:{{ $rootScope.Values.etcd.clientPort }}
+            - --advertise-client-urls
+            - {{ template "etcd-node" (list $index $svcName $rootScope.Values.etcd.clientPort) }}
+            - --initial-cluster
+            - {{ range $innerIndex, $error := until ($rootScope.Values.etcd.clusterNodeCount | int) -}}
+              etcd{{ $innerIndex }}={{ template "etcd-node" (list $innerIndex $svcName $rootScope.Values.etcd.peerPort) }}
+              {{- if lt 1 (sub ($rootScope.Values.etcd.clusterNodeCount | int) ($innerIndex | int)) -}},{{- end -}}
+              {{- end}}
+            - --initial-cluster-state
+            - new
+          image: quay.io/coreos/etcd:latest
+          name: etcd{{ $index }}
+          ports:
+            - containerPort: {{ $rootScope.Values.etcd.clientPort }}
+              name: client
+              protocol: TCP
+            - containerPort: {{ $rootScope.Values.etcd.peerPort }}
+              name: server
+              protocol: TCP
+      restartPolicy: Always
+{{ end }}

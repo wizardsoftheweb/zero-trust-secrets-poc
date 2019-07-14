@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -20,7 +19,7 @@ func WriteToTempFile(fileContents string) *os.File {
 	if nil != err {
 		log.Fatal(err)
 	}
-	fmt.Println(file.Name())
+	log.Printf("%s now contains %s", file.Name(), fileContents)
 	return file
 }
 

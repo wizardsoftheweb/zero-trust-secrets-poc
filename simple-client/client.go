@@ -128,6 +128,11 @@ func BootstrapViper(directory string) {
 
 func main() {
 	cwd, _ := os.Getwd()
+	log.Printf("clientPort: %d\n", clientPort)
+	log.Printf("randoEndpoint: %s\n", controlServerUrl)
+	log.Printf("secretsKey: %s", secretsKey)
+	log.Printf("secretCount: %d", secretCount)
+	log.Printf("etcdHosts: %s", etcdHosts)
 	EnsureKeyFilesExist(cwd)
 	BootstrapViper(cwd)
 	GlobalState := &Config{

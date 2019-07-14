@@ -1,0 +1,51 @@
+{{- $rootScope := . -}}
+{{ $svcName := include "zts-poc.name" . }}
+{{ range $index, $error := until (.Values.simpleClient.desiredCount | int) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: simple-client
+{{ include "zts-poc.labels" $rootScope | indent 4 }}
+  name: simple-client{{ $index }}
+  namespace: {{ include "zts-poc.name" $rootScope }}
+spec:
+  replicas: {{ $rootScope.Values.simpleClient.replicaCount | int }}
+  selector:
+    matchLabels:
+      app: simple-client{{ $index }}
+  template:
+    metadata:
+      labels:
+        app: simple-client{{ $index }}
+    spec:
+      initContainers:
+        - name: wait-for-control-server
+          image: busybox
+          command: ["/bin/sh", "-c", "while (wget -q -O - http://control-server.{{ include "zts-poc.name" $rootScope }}.svc:{{ $rootScope.Values.controlServer.clusterPort }}/ping | awk '/pong/{ exit(1) }'); do sleep 5; done"]
+      containers:
+        - image: wizardsoftheweb/zts-poc:simple-client
+          imagePullPolicy: Always
+          name: simple-client
+          env:
+            - name: PORT
+              value: '{{ $rootScope.Values.simpleClient.targetPort }}'
+            - name: RANDO_ENDPOINT
+              value: 'http://control-server.{{ include "zts-poc.name" $rootScope }}.svc:{{ $rootScope.Values.controlServer.clusterPort }}/rando'
+            - name: SECRETS_COUNT
+              value: '10'
+            - name: SECRETS_KEY
+              value: '/simple-client{{ $index }}/secrets.json'
+            - name: ETCD_HOSTS
+              value: "{{ range $innerIndex, $error := until ($rootScope.Values.etcd.clusterNodeCount | int) -}}
+              {{ template "etcd-node" (list $innerIndex $svcName $rootScope.Values.etcd.clientPort) }}
+                {{- if lt 1 (sub ($rootScope.Values.etcd.clusterNodeCount | int) ($innerIndex | int)) -}}
+                  ,
+                {{- end -}}
+              {{- end}}"
+          ports:
+            - containerPort: {{ $rootScope.Values.simpleClient.targetPort }}
+              name: http
+              protocol: TCP
+{{ end }}

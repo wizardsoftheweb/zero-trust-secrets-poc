@@ -1,0 +1,35 @@
+# I genuinely don't know why Helm does this
+nameOverride: ""
+# Ditto
+fullnameOverride: ""
+
+# Settings for the etcd deployment(s) and services
+etcd:
+  # number of nodes you want in the `etcd` cluster
+  clusterNodeCount: 2
+  # number of replicas of each node
+  replicaCount: 1
+  # the port for peer URLs
+  peerPort: 2380
+  # the port for client URLs
+  clientPort: 2379
+
+# Settings for the control server deployment and service
+controlServer:
+  # number of control replicas
+  replicaCount: 1
+  # the port exposed to the cluster via the service
+  clusterPort: 8080
+  # the port on each container; containerPort
+  targetPort: 8080
+
+# Setting for the simple client deployment(s) and service(s)
+simpleClient:
+  # number of different clients you'd like to spin up
+  desiredCount: 1
+  # number of replicas per client
+  replicaCount: 1
+  # the port exposed to the cluster via the service
+  clusterPort: 4747
+  # the port on each container; containerPort
+  targetPort: 4747

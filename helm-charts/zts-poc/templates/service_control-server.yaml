@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+{{ include "zts-poc.labels" . | indent 4 }}
+  name: control-server
+  namespace: {{ include "zts-poc.name" . }}
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: {{ .Values.controlServer.clusterPort }}
+      protocol: TCP
+      targetPort: {{ .Values.controlServer.targetPort }}
+  selector:
+    app: control-server
