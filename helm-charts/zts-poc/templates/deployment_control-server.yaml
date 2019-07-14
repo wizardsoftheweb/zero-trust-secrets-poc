@@ -20,7 +20,7 @@ spec:
       initContainers:
         - name: wait-for-etcd
           image: busybox
-          command: ["/bin/sh", "-c", "for URL in $(wget -q -O - http://etcd-client.{{ include "zts-poc.name" . }}.svc:{{ .Values.etcd.clientPort }}/v2/members | tr ',' '\n' | sed -n -E 's/^.*client.*\"(htt[^\"]*?)\".*?$/\\1/p' | tr '\n' ' ' ); do while (wget -q -O - \"$URL/health\" | awk '/true/{ exit(1) }'); do sleep 5; done; done"]
+          command: ["/bin/sh", "-c", "while (! wget -q -O - http://etcd-client.{{ include "zts-poc.name" . }}.svc:{{ .Values.etcd.clientPort }}/v2/members); do sleep 5; done; for URL in $(wget -q -O - http://etcd-client.{{ include "zts-poc.name" . }}.svc:{{ .Values.etcd.clientPort }}/v2/members | tr ',' '\n' | sed -n -E 's/^.*client.*\"(htt[^\"]*?)\".*?$/\\1/p' | tr '\n' ' ' ); do while (wget -q -O - \"$URL/health\" | awk '/true/{ exit(1) }'); do sleep 5; done; done"]
       containers:
         - image: wizardsoftheweb/zts-poc:control-server
           imagePullPolicy: Always
