@@ -205,3 +205,33 @@ $ curl -s $CLIENT | jq
 }
 ```
 
+### Verifying Metrics
+
+I wanted a simple way to check this stuff out without having to run the full Promotheus operator on my cluster. So I snagged [`prom2json`](https://github.com/prometheus/prom2json) and skimmed the output.
+
+```shell-session
+$ prom2json $CONTROL/metrics \
+    | jq -r '.[]|select(.name=="gin_requests_total")|[.metrics[]| {url: .labels.url, count: .value}]|group_by(.url)|[.[]|{url: .[0].url, count: map(.count | tonumber) | add}]|sort_by(.url)|.[]|.url + " " + (.count | tostring)' \
+    | termgraph --title 'Requests Per Endpoint' --width 10 --custom-tick '🍸'
+
+# Requests Per Endpoint
+
+/           : 🍸 1.00 
+/favicon.ico: 🍸 1.00 
+/ping       : 🍸🍸 2.00 
+/rando      : 🍸🍸🍸 3.00 
+
+
+$ prom2json $CLIENT/metrics \
+    | jq -r '.[]|select(.name=="gin_requests_total")|[.metrics[]| {url: .labels.url, count: .value}]|group_by(.url)|[.[]|{url: .[0].url, count: map(.count | tonumber) | add}]|sort_by(.url)|.[]|.url + " " + (.count | tostring)' \
+    | termgraph --title 'Requests Per Endpoint' --width 10 --custom-tick '🍸'
+
+# Requests Per Endpoint
+
+/            : 🍸🍸🍸🍸 4.00 
+/favicon.ico : 🍸 1.00 
+/force-update: 🍸 1.00 
+
+```
+
+I used [`termgraph`](https://github.com/mkaz/termgraph) for the pretty pictures
