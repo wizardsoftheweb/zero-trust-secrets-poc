@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto"
 	"log"
 	"time"
 
@@ -12,14 +13,16 @@ const (
 	name              = "CJ Harries"
 	email             = "cj@wotw.pro"
 	comment           = "Home Brew ZTS PoC"
-	minimumRsaBits    = 4096
+	baseHash          = crypto.SHA256
 	baseCipher        = packet.CipherAES256
 	commonCompression = packet.CompressionZLIB
 	baseLevel         = packet.BestSpeed
+	minimumRsaBits    = 4096
 )
 
 func newGenericConfig() *packet.Config {
 	return &packet.Config{
+		DefaultHash:            baseHash,
 		DefaultCipher:          baseCipher,
 		DefaultCompressionAlgo: commonCompression,
 		CompressionConfig: &packet.CompressionConfig{
