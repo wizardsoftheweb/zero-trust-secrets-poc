@@ -3,8 +3,10 @@ package main
 import (
 	"crypto"
 	"log"
+	"os"
 	"time"
 
+	"github.com/pkg/profile"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/packet"
 )
@@ -14,7 +16,7 @@ const (
 	email             = "cj@wotw.pro"
 	comment           = "Home Brew ZTS PoC"
 	baseHash          = crypto.SHA256
-	baseCipher        = packet.CipherAES256
+	baseCipher        = packet.CipherCAST5
 	commonCompression = packet.CompressionZLIB
 	baseLevel         = packet.BestSpeed
 	minimumRsaBits    = 4096
@@ -45,5 +47,7 @@ func generateEntity() error {
 }
 
 func main() {
+	cwd, _ := os.Getwd()
+	defer profile.Start(profile.ProfilePath(cwd)).Stop()
 	_ = generateEntity()
 }
