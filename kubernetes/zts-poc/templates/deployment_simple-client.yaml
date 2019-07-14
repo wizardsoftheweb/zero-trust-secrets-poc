@@ -30,7 +30,7 @@ spec:
           name: simple-client
           env:
             - name: PORT
-              value: {{ $rootScope.Values.simpleClient.targetPort }}
+              value: '{{ $rootScope.Values.simpleClient.targetPort }}'
             - name: RANDO_ENDPOINT
               value: 'http://control-server.{{ include "zts-poc.name" $rootScope }}.svc:{{ $rootScope.Values.controlServer.clusterPort }}/rando'
             - name: SECRETS_COUNT
