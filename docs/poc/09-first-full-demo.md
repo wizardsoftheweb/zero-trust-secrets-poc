@@ -152,3 +152,56 @@ $ minikube service list --namespace zts-poc
 
 ```
 
+### Verifying Secrets
+
+```shell-session
+$ export CONTROL='http://192.168.99.104:32613'
+$ export CLIENT='http://192.168.99.104:30602'
+$ alias etcdemo='etcdctl --endpoints http://192.168.99.104:31189 --no-sync'
+$ etcdemo ls /
+/simple-client0
+
+$ etcdemo get /simple-client0/secrets.json
+wcBMA6/UdzJ72KTGAQgADtwbjy/QqX711NsFBw34fszY5yQ+drX4PjIiTueJzSuJSzzz3888HhDjKSPu/wTNSaFdsUyIkLnSlJi64UQmOu5L4OUBibVqUu2p1x+6dCh1sWY3jsDih9Jysn3S56IXX1enxRt5LtAq6L5fSufcOa0yMz7zbAP0k6stHGOjaNgI2bFKhss8Xg2eh69xVbjzi/Dcyv+8arJrSfp6hYZPdRGrttiLr2xFsjLbCvUmuLxVlLELHqVUrVpQoy94wZSo2ipDvgURqC63RNPdLl+y3rSvVPswWfv+JhEn/8t21mGmP5SW6u+x4IzfB/eBd62/622kzPk4UZf2JWaI1kVyEdLgAeSgG29nOEZhuveKvqj/fEzO4fX/4Fbg1eGsHOBX4onKg8fgheM/TMk+6QRDeeAL4Yt14P/n1oN2eq22AzI6xTuxnOYkNahZzCSP9+4ROai/EWZXeGic2Q3JgoDGxW6KkyHyRO2uOQ12AQ1SiSUGtf2MuleQWxHHf5dXl8chxckvtd+ULQukmP6SjvdZvugYhfYfUZTvjoAlKhVe3yTyJVtiAvmt0fP3AcVrG4IuACUzhE13Vibgx+ahAPIZKmoK/UPawSy+eNnyoj/ZhBRP3gWRKUnyfsIqM3qWLLTE08W+kY7R9wiQdaBjgtGzFMKn0TKeH1Hvqjj84IblVa+fcfVClIjanMAyvZNfpsR34smGDGrVrP9UALpmiIfgb+TgQOd1WsA+k1DWXORLZjTi4IznJs3Z6UJB6JXKiRQjOVNnlz52aeyx/cO620hi2t0j+ElTMpdIDkVoEFeZz4OGJ/mZlU14A9gW9vPUHvfXKEg2R1sjSsPgWCVLTNeH+Ik81UDXuAkswiMUbQCZRrtIpFSz16QdgO9t51yuzBbsWpUIqKZnIniBRzyrOtqSm0T83UzgquZYDT5fYoNZq5vWxE44w1rXqpX+BZppuJdQARiIrI+HIBPxVKY0FGlp5U8IBHwG1pLayRRt7WufQvEirwvPBXI84EDlH9W1n++IdYhT5xk2mu+j9iPoGzlPf/HGPeOh3OaR3DvgzeTYMii1R7DsPdgqSdpImzwB4OrmdetishcZ3Z8SlweYXvxyYWfV6K7MIj7K8zfFtDpR8BnVJOcyPpu8JIXjmTBTX9hfw89vgCGb7j2fQ1g+CHqzJOAm4lQDWg/gPeKUj06S4FPjxbur4tSZDJjgx+SLwEiC+3PPNdcx+OWEQzw64ngqLP3hWP0A
+
+$ curl -s $CLIENT | jq
+{
+  "secrets": [
+    "MR4ltlrAC5Bmr5AFaCfSoAoXMxzvDlayd3zaxsAhYMrw84J9LkZ5izu6shjxjeE=",
+    "00WeYTsnd-Np4wlqV38kX0p_Oi7-386QYcKK7b22n85fc3t9uatzq84tzE2kIkI=",
+    "PJMRmgjW50EJVyD-n4T0RtFqw2trhfupd6lbBdfT2Qxu5JoLTRS3FsLDsaS-b-w=",
+    "pxXUV_F1XkQzUeVTcuER6Z_NGbA9npeQ9unHzLeMTSralMAE2PKtp8pbtMIyujQ=",
+    "e9Gg28JEtfefrhZIdCq2PqaI_jbQbOoVByRFjTNj20740YMqX_pYPzWm2lb_NFM=",
+    "rT0UUTHcy7qP-cJpm6bAJDszaLpNW8kEnbIQRebT_CVmNeXSveN6q3X796HY6Nk=",
+    "rf0picJsrc5RdKjxYBVJ2BeLTJ7_ZRTi-BROhnpN0sqjRUbJD4ul6p4dI3D1sdk=",
+    "rvEH91dSTwsG-wJDQRJem7KO04lPb8WbcevDCgYCwMtL9yt5-2PosDu4K_nvaTY=",
+    "gZ2eRtEf-413W_lfPTS1RIzw5ZYpuVYxIeN4H8fryM-Tzjh7mtpgYWdOnZqUyYY=",
+    "CKilTvIKwHtAzaW5K2f99t2B91f6WqV7WvzjUw1YMn5_P0rX1uO-iN4-Od3yKKY="
+  ]
+}
+
+$ curl -S $CLIENT/force-update | jq
+{
+  "message": "Secrets were regenerated"
+}
+
+$ etcdemo get /simple-client0/secrets.json
+wcBMA6/UdzJ72KTGAQgAPRWGDcJNJY8yPZKJBwOwm8XI8hOt5tCkQf6KphrMzfldkdv3/sz7nko9jnvBVS3XJOeIF5iWeXSV4bLaQi9UrctKh9sy9nfWxfCQGiSWQOJkIE4Qk3yhnygaEuwT6WUXi6dq07I6isl8kZZ5IDRKYcIa37y+Nnrhw0K3hYxu9NQw50BOfshCA/Hln8YwbsW1b5dDRL3BM/V6RjI7SeJ3mutP9BRUREPdgEI8CqxwphS3BbWgeEc7SB2JH7LDBnpbMGqAcQZeAhs9AUjvPV56zH+iEsA/IR4C7JjbLLIo5+fWMIlvtUTWs8Ua5wSAINJSiYhhPI4UqwrGKgkOUpchMtLgAeStXOkrj/RiEvfyZkTCO36b4Uva4AXgROGucOD44tGOk1DgGONAze25Z8deUeAv4etU4DDn4aK4BZMVmwp+GHRojxPnck8lEmBEShfaqR/P7O1WoyK5auno8ZO0y2BMU8b0NFhfzv8W+UT7ex94GSDfKOGdRmASkKF526ZTAXjFOOjjOgiExuYt2qjMZWhM89uABM+PJVAmS7BZjScPhO9A/L0U4nrNrHM0Jfkr7me4z4efwt/gW+bJl2DZRkkwkDRBjnydRysQehndl8zD8X6tuQ0DZBX8cMcmVCS2WhD1aw+k9LE2dpCqiIR8liIp+WA7Wtz5kY194DPlDVTZqFL3LczKjMGRO0P40eCGh30lEwdmmXbabWvNBEHgP+QC8q3RV2Kx+UIAY+FS0LiU4D3nvGq+xP+njvHoDjvh8ANO60d1zoHsEKAA8T5ZOg0CjDKI6SOk9q0nEtq7PISxuX9+Bs9bJrdGxd88/l93knpRcfS87rNp0VL5W8jhbwwrpnyPgOZlB1VSLBtVqIATV8ke4DNFX0VtlgLJCzVdZZ1ZS8n5/5wXUqp8RuuwpdKY0GzgFOYtKTYurxHKw6c/STZzrUS+3elPPnHQj2cDt1MHBJHJy1Uc8ZChjw1LQ94gKd43qxSMQHzZ1ipUayXM2EsXCfM+4DTlwGP2798+wH8dPhgw8m2vRfoPZ0wukOpemsPDs3ZnpADgluTSWXtlNdCFGM4GuG07pORF4CrmhaQdoCMnw9UB/mGcHmamzSXkYOxB75o+zkHjKNndLaTx8yyw7gnove9h3X77MD4cI0Wm9cxA2g0pv0Jw/ND6IuCA4sn3jQzgFuGGJuAM4qpcHk/gMeMY8kntgetAQ+Ax5F+njC85SdPS2uEYEK2mxffi8cUb/eFNUQA=
+
+$ curl -s $CLIENT | jq
+{
+  "secrets": [
+    "hh4zRDZzCZ4clYvLvXmh5ZEnj4iLxo3GSdT9AoCKBh0sabKWP3SCd024ztG0jCA=",
+    "TiihFBbHUTmi1lWp8VHmmcRN30-N272ard_evjeiuqDZLWTqEQoC8-izlLP__p4=",
+    "gIhLD2SVeCTCBU1b187MAmnKwOXxTB0E4IC5Hc6aUgKLx4tvf9bOK0PS-YnBQgo=",
+    "PNzZKs_nA5kD67pJSt1xwvl-SA4MkePnmlHEjNcvExE75cGZhwBY1uvpAm-Mr7I=",
+    "uEEGorV9e1d2lemV-1y34J_SPwuH-48hupnROiy5if-E1J5kQJ8tAbAsA9pnfjk=",
+    "sk-Fp8wImpu47C2o5v1YPDbV8sZSKAtCKPM1J-4JfQ6fLMdJaa8-36LHZ7DH7Is=",
+    "n4U6fJH4C1yykA7rczeZLUUUih6sC4n207sZLyt0a_KmeDpTNEaieEA1ZSOEt64=",
+    "JiwOavdsjT7Ba0ACT0aeNrHAxhr39AGLlmKDvLymFtEdWFSHokKj8l3dmLFMPZw=",
+    "7xc41Mf1yjGzWBIORdOf_tOW19Es-2lu14ap4lRQpsSfgTifsfAecEgRDgrt8AA=",
+    "UVhGiz0ReGTIVHEBtJeUrnoOmCw7rS1NcAHDQxbcFA7rPk0yw6j14ZVr4SKvMm0="
+  ]
+}
+```
+
