@@ -55,3 +55,100 @@ kubectx pocDemo
 alias k=kubectl
 ```
 
+### Checking out the Deployment
+
+```shell-session
+$ cd path/to/zero-trust-secrets
+
+$ k get ns
+NAME              STATUS   AGE
+default           Active   2m32s
+kube-node-lease   Active   2m35s
+kube-public       Active   2m35s
+kube-system       Active   2m35s
+
+$ helm init --history-max 200
+$HELM_HOME has been configured at /home/cjharries/.helm.
+
+Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
+
+Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
+To prevent this, run `helm init` with the --tiller-tls-verify flag.
+For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
+
+$ helm install helm-charts/zts-poc
+NAME:   nordic-bumblebee
+LAST DEPLOYED: Sat Jul 13 21:49:43 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/Deployment
+NAME            READY  UP-TO-DATE  AVAILABLE  AGE
+control-server  0/1    1           0          0s
+etcd0           0/1    1           0          0s
+etcd1           0/1    1           0          0s
+simple-client0  0/1    1           0          0s
+
+==> v1/Namespace
+NAME     STATUS  AGE
+zts-poc  Active  0s
+
+==> v1/Pod(related)
+NAME                             READY  STATUS             RESTARTS  AGE
+control-server-6f8595dccf-xjnfh  0/1    Init:0/1           0         0s
+etcd0-556999fdd8-rc8k9           0/1    ContainerCreating  0         0s
+etcd1-67f55857bf-pr57t           0/1    ContainerCreating  0         0s
+simple-client0-5d5bbb6bb9-nx4q6  0/1    Init:0/1           0         0s
+
+==> v1/Service
+NAME            TYPE      CLUSTER-IP      EXTERNAL-IP  PORT(S)                        AGE
+control-server  NodePort  10.104.251.135  <none>       8080:32613/TCP                 0s
+etcd-client     NodePort  10.99.67.209    <none>       2379:31189/TCP                 0s
+etcd0           NodePort  10.108.116.39   <none>       2379:32550/TCP,2380:30178/TCP  0s
+etcd1           NodePort  10.101.90.66    <none>       2379:31637/TCP,2380:31149/TCP  0s
+simple-client0  NodePort  10.101.106.209  <none>       4747:30602/TCP                 0s
+
+
+NOTES:
+Thank you for installing zts-poc.
+
+Your release is named nordic-bumblebee.
+
+To learn more about the release, try:
+
+  $ helm status nordic-bumblebee
+
+$ kubens zts-poc
+Context "pocDemo" modified.
+Active namespace is "zts-poc".
+
+$ k get po
+control-server-6f8595dccf-xjnfh   1/1     Running   0          25s
+etcd0-556999fdd8-rc8k9            1/1     Running   0          25s
+etcd1-67f55857bf-pr57t            1/1     Running   0          25s
+simple-client0-5d5bbb6bb9-nx4q6   1/1     Running   0          25s
+
+$ k get svc
+NAME             TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                         AGE
+control-server   NodePort   10.104.251.135   <none>        8080:32613/TCP                  34s
+etcd-client      NodePort   10.99.67.209     <none>        2379:31189/TCP                  34s
+etcd0            NodePort   10.108.116.39    <none>        2379:32550/TCP,2380:30178/TCP   34s
+etcd1            NodePort   10.101.90.66     <none>        2379:31637/TCP,2380:31149/TCP   34s
+simple-client0   NodePort   10.101.106.209   <none>        4747:30602/TCP                  34s
+
+$ minikube service list --namespace zts-poc
+|-----------|----------------|--------------------------------|
+| NAMESPACE |      NAME      |              URL               |
+|-----------|----------------|--------------------------------|
+| zts-poc   | control-server | http://192.168.99.104:32613    |
+| zts-poc   | etcd-client    | http://192.168.99.104:31189    |
+| zts-poc   | etcd0          | http://192.168.99.104:32550    |
+|           |                | http://192.168.99.104:30178    |
+| zts-poc   | etcd1          | http://192.168.99.104:31637    |
+|           |                | http://192.168.99.104:31149    |
+| zts-poc   | simple-client0 | http://192.168.99.104:30602    |
+|-----------|----------------|--------------------------------|
+
+```
+
