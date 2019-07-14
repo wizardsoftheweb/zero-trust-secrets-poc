@@ -61,3 +61,7 @@ I noticed that, when the chart was first applied, things would go crazy for a bi
     }
     ```
     
+### Larger Deployments
+
+I made it possible to deploy a variable amount of both `etcd` nodes and clients. It was an interesting exercise. It feels weird not increasing the number of replicas in the deployment. However, [the `etcd` manifest I used](https://github.com/etcd-io/etcd/blob/master/hack/kubernetes-deploy/etcd.yml) splits out each host into its own pod and service with all of them sharing the `etcd-client` service. Similarly, the simple clients are supposed to be pretend apps from all sorts of different sources. Also since each client is generated its own key on boot it can't be replicated. Yet.
+
