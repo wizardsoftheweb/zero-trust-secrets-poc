@@ -8,6 +8,10 @@ I cleaned up the manifests and made things a bit more programmatic. I thought ab
 
 ## Improvements
 
+### DockerHub Images
+
+Both containers are in DockerHub now so you can play with them. They're not connected to a pipeline; I was just building and pushing locally.
+
 ### `initContainers`
 
 I noticed that, when the chart was first applied, things would go crazy for a bit. Since I slapped the server and client together really fast, they don't do any recovery and just die when they encounter a problem. I prolonged that inevitable refactor by building two `initContainers`.
