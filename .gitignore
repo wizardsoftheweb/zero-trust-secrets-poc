@@ -19,3 +19,4 @@ pubring.kbx
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+cpu.pprof
