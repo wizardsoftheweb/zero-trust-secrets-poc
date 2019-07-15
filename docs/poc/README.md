@@ -13,3 +13,4 @@ Docs get added here as I write them.
 7. [Starter Kube](./07-kubernetes.md): Everything is containerized and running in a kube cluster
 8. [Why the Helm not?](./08-helm.md): put the PoC in a Helm chart to show it off
 9. [A full demo in Kube](./09-first-full-demo.md): Reiterate goals and show off
+10. [Go doesn't do RSA very well](./10-converting-to-openpgp.md): spoiler alert
