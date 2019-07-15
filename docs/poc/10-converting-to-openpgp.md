@@ -8,7 +8,7 @@ Go has [a fully-featured OpenPGP library](https://godoc.org/golang.org/x/crypto/
 
 ## Benchmarking Creation
 
-I threw together a very simple and relatively secure profile to begin with. `AES256` for a symmetric cipher, zlib [just because](https://stackoverflow.com/a/20765054/2877698), the `BestSpeed` compression level, 4096 bits for RSA, and the default `SHA256` hash. That's a profile I'd be comfortable using every day. The PoC clients I'd like to build, though, can't. The time to generate fluctuates between near one second and near four seconds. That's nuts.  
+I threw together a very simple and relatively secure profile to begin with. `AES256` for a symmetric cipher, zlib [just because](https://stackoverflow.com/a/20765054/2877698), the `BestSpeed` compression level, 4096 bits for RSA, and the default `SHA256` hash. That's a profile I'd be comfortable using every day. The PoC clients I'd like to build, though, can't. The time to generate fluctuates between near one second and near four seconds. That's nuts.
 
 ### Background
 
@@ -56,7 +56,7 @@ This puts us at
     2 bit lengths
  x  4 hash algorithms
 -----------------------------
-  480 Permutations 
+  480 Permutations
 ```
 
 ### First Pass
@@ -70,7 +70,7 @@ $ cat benchmark.log \
         print $5 / 10 ^ 9, group[1], group[2], group[3], group[4]; }' \
     | sort -k1 -n \
     | grep 'AES256 ZLIB'
-    
+
 0.275695 AES256 ZLIB DefaultCompression 2048
 0.281401 AES256 ZLIB BestSpeed 2048
 0.309848 AES256 ZLIB NoCompression 2048
@@ -199,7 +199,7 @@ I got a little concerned because there's an insane amount of variability between
 9600 records / 480 permutations = 20 records per permutation
 ```
 
-Admittedly, that's not a lot. But I lost patience and started investigating anyway. Initially, I looked at all the results together, grouping by everything not `Duration` so I could get a median duration for each permutation. 
+Admittedly, that's not a lot. But I lost patience and started investigating anyway. Initially, I looked at all the results together, grouping by everything not `Duration` so I could get a median duration for each permutation.
 ```text
      Hash Cipher Compr     Level  RSA medianDur meanDur durationSd coeffOfVar
 22 SHA512  CAST5  ZLIB   NoCompr 2048    0.3655  0.3660    0.08264      22.58
@@ -279,7 +279,7 @@ I'd personally like to run with more bits because it's more secure. That really 
 9  SHA256  CAST5   ZIP   BestSpd 4096     2.794   2.821     0.9141      32.40
 10 SHA224  CAST5   ZIP   BestSpd 4096     2.818   2.915     1.0660      36.56
 ```
-Sorted by median generation, the fastest configs take more than two seconds. That's nuts. 
+Sorted by median generation, the fastest configs take more than two seconds. That's nuts.
 ```console
 $ bash -c 'trap times EXIT; gpg2 --armor --batch --gen-key gpg.batch'
 gpg: Generating a configuration OpenPGP key
@@ -434,7 +434,6 @@ Active filters:
 Showing nodes accounting for 80ms, 80.00% of 100ms total
       flat  flat%   sum%        cum   cum%
       80ms 80.00% 80.00%       80ms 80.00%  math/big.addMulVVW
-
 ```
 
 
