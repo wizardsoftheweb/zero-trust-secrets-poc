@@ -436,7 +436,27 @@ Showing nodes accounting for 80ms, 80.00% of 100ms total
       80ms 80.00% 80.00%       80ms 80.00%  math/big.addMulVVW
 ```
 
+## Final Thoughts
 
+It turns out that this a known issue with Go.
+
+* [Same thing in 2014](https://grokbase.com/t/gg/golang-nuts/14cbkyv5kf/go-nuts-slow-math-big-performance-and-the-impact-on-crypto-tls)
+* [Two years ago](https://github.com/golang/go/issues/22643)
+* [Last year](https://github.com/containous/traefik/issues/2673#issuecomment-374381116)
+
+There's [been work on it](https://go-review.googlesource.com/q/addMulVVW). It's either still embarrassingly slow and they're just avoiding the issue or there's been a regression. [This change suggests the former](https://go-review.googlesource.com/c/go/+/164966). The final comments in that change create [this issue](https://github.com/golang/go/issues/32492) and say it's on the agenda for Go 1.14.
+
+In other words, I didn't accomplish anything I wanted to because the underlying library is horrible. That would be very frustrating if I didn't get to do a ton of really cool stuff. The PoC isn't where I want it but it's still doing well.
+
+There are a few potential leads that I plan on investigating when I'm able to come back to this.
+
+1) The recommended replacement for `math/big` is [a C-based library, GMP](https://github.com/ncw/gmp). I saw [a note in the official Go repo](https://github.com/golang/go/issues/22643) and in several of the other issues I dug up. An external C library might solve the speed issue but it opens up a slew of new ones.
+2) There's a chance it's just my box. Lots of the issues had lots of people saying `It works fine on my machine`. It might work differently containerized on `arm64`. I know [I can build `arm64`](https://medium.com/@kurt.stam/building-aarch64-arm-containers-on-dockerhub-d2d7c975215c) on my `amd64` box and I'm pretty sure [I can run it too](https://blog.hypriot.com/post/docker-intel-runs-arm-containers/), so it's worth a shot.
+3) I never went past initial key generation. There's a chance things get better after that. A slow key build is fine if the it's nowhere near as slow in use. I highly doubt this one but it should be fairly simple to cross off.
+4) I could lower my standards.
+5) There are other encryption schemes. They'll require some additional work to set up with QoL tools like `etcd` and Viper. Having seen the innards of `crypt` (and `etcdctl`), I don't think adding that functionality would be very difficult.
+
+I've learned about a ton of different products today alone in trying to figure out this Golang issue. I'm sad I didn't get further along with programmatically generating keys, but I think the PoC is in a good place.
 
 ## `pprof` Easter Egg
 I moved this to the end so it wouldn't be bothersome to people using Markdown renderers that don't parse HTML. I think it's hilarious and I'm going to try to use [`graph-easy`](https://github.com/ironcamel/Graph-Easy) everywhere now.
