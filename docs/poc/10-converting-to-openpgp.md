@@ -291,4 +291,293 @@ gpg: done
 ```
 `gpg2` takes milliseconds to do almost the same task. That doesn't make any sense.
 
-## Just Kidding
+### Back to Solo Key Gen
+
+I decided to take the config from that first row and try messing with it. There's a chance generating keys via go routines instead of the main process is affecting it. Except that's not how Go works. The main process is basically a go routine with focus. Either way, I wanted to generate it [another way](/keys-from-scratch/main.go) to see what would happen.
+
+```console
+$ go build && ./keys-from-scratch
+2019/07/14 17:35:54 duration: 2.410806551s
+2019/07/14 17:35:54 &openpgp.Entity{PrimaryKey:(*packet.PublicKey)(0xc0004d2000), PrivateKey:(*packet.PrivateKey)(0xc0004d4000), Identities:map[string]*openpgp.Identity{"CJ Harries (cj@wotw.pro) <Home Brew ZTS PoC>":(*openpgp.Identity)(0xc000030080)}, Revocations:[]*packet.Signature(nil), Subkeys:[]openpgp.Subkey{openpgp.Subkey{PublicKey:(*packet.PublicKey)(0xc0004d2280), PrivateKey:(*packet.PrivateKey)(0xc0004d41a0), Sig:(*packet.Signature)(0xc0004d61c0)}}}
+
+$ ./keys-from-scratch
+2019/07/14 17:37:27 duration: 1.542727705s
+2019/07/14 17:37:27 &openpgp.Entity{PrimaryKey:(*packet.PublicKey)(0xc0002f8000), PrivateKey:(*packet.PrivateKey)(0xc0002fa000), Identities:map[string]*openpgp.Identity{"CJ Harries (cj@wotw.pro) <Home Brew ZTS PoC>":(*openpgp.Identity)(0xc00020c080)}, Revocations:[]*packet.Signature(nil), Subkeys:[]openpgp.Subkey{openpgp.Subkey{PublicKey:(*packet.PublicKey)(0xc0002f8280), PrivateKey:(*packet.PrivateKey)(0xc0002fa1a0), Sig:(*packet.Signature)(0xc0002fc1c0)}}}
+
+$ ./keys-from-scratch
+2019/07/14 17:37:36 duration: 3.257900837s
+2019/07/14 17:37:36 &openpgp.Entity{PrimaryKey:(*packet.PublicKey)(0xc0002a4000), PrivateKey:(*packet.PrivateKey)(0xc0002a6000), Identities:map[string]*openpgp.Identity{"CJ Harries (cj@wotw.pro) <Home Brew ZTS PoC>":(*openpgp.Identity)(0xc000204040)}, Revocations:[]*packet.Signature(nil), Subkeys:[]openpgp.Subkey{openpgp.Subkey{PublicKey:(*packet.PublicKey)(0xc0002a4280), PrivateKey:(*packet.PrivateKey)(0xc0002a61a0), Sig:(*packet.Signature)(0xc0002a81c0)}}}
+
+$ ./keys-from-scratch
+2019/07/14 17:38:43 duration: 1.465451441s
+2019/07/14 17:38:43 &openpgp.Entity{PrimaryKey:(*packet.PublicKey)(0xc0004d4000), PrivateKey:(*packet.PrivateKey)(0xc0004d6000), Identities:map[string]*openpgp.Identity{"CJ Harries (cj@wotw.pro) <Home Brew ZTS PoC>":(*openpgp.Identity)(0xc000030080)}, Revocations:[]*packet.Signature(nil), Subkeys:[]openpgp.Subkey{openpgp.Subkey{PublicKey:(*packet.PublicKey)(0xc0004d4280), PrivateKey:(*packet.PrivateKey)(0xc0004d61a0), Sig:(*packet.Signature)(0xc0004d81c0)}}}
+
+$ ./keys-from-scratch
+2019/07/14 17:39:24 duration: 3.712138163s
+2019/07/14 17:39:24 &openpgp.Entity{PrimaryKey:(*packet.PublicKey)(0xc0004e4000), PrivateKey:(*packet.PrivateKey)(0xc0004e6000), Identities:map[string]*openpgp.Identity{"CJ Harries (cj@wotw.pro) <Home Brew ZTS PoC>":(*openpgp.Identity)(0xc000250140)}, Revocations:[]*packet.Signature(nil), Subkeys:[]openpgp.Subkey{openpgp.Subkey{PublicKey:(*packet.PublicKey)(0xc0004e4280), PrivateKey:(*packet.PrivateKey)(0xc0004e61a0), Sig:(*packet.Signature)(0xc0004e81c0)}}}
+```
+This doesn't make any sense. 2.5 seconds is the median with the rest of the set split equally a second away. A two second range for something that should be a rote process has to mean something else is going.
+
+### `pprof` to the Rescue?
+
+If you're not familiar with `pprof`, neither was I until this problem. It's hella useful, though. It's [super fast to set up for simple processes](https://flaviocopes.com/golang-profiling/) and, assuming you played with it locally first to get a handle on it, [equally fast to use with long-running tasks](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/).
+
+Once it's inserted in the codebase, it's good to go.
+
+```console
+$ go build && ./keys-from-scratch
+2019/07/14 17:48:39 profile: cpu profiling enabled, ~/zero-trust-secrets/keys-from-scratch/cpu.pprof
+2019/07/14 17:48:44 duration: 5.427781549s
+2019/07/14 17:48:44 &openpgp.Entity{PrimaryKey:(*packet.PublicKey)(0xc0002b2000), PrivateKey:(*packet.PrivateKey)(0xc0002b4000), Identities:map[string]*openpgp.Identity{"CJ Harries (cj@wotw.pro) <Home Brew ZTS PoC>":(*openpgp.Identity)(0xc000030080)}, Revocations:[]*packet.Signature(nil), Subkeys:[]openpgp.Subkey{openpgp.Subkey{PublicKey:(*packet.PublicKey)(0xc0002b2280), PrivateKey:(*packet.PrivateKey)(0xc0002b41a0), Sig:(*packet.Signature)(0xc0002b61c0)}}}
+2019/07/14 17:48:44 profile: cpu profiling disabled, ~/zero-trust-secrets/keys-from-scratch/cpu.pprof
+```
+What this should show us is what happened during this obscenely long call. If it's something I did (ie did wrong), it should be as obvious as the time jump from doubling bits.
+
+**NOTE:** You don't actually need to use a double dash for the flags. I do it because I'm opinionated. Short flags are for stacking options. Long flags are for human-readable content and more complicated things. [`pprof` accepts both](https://github.com/google/pprof/blob/e84dfd68c163c45ea47aa24b3dc7eaa93f6675b1/internal/driver/interactive.go#L302) just like [BSD's implementation](https://www.freebsd.org/cgi/man.cgi?getopt_long(3)) and [GNU's implementation](https://linux.die.net/man/3/getopt_long). Doesn't mean I have to like it.
+
+```console
+$ go tool pprof --text ./keys-from-scratch ./cpu.pprof
+File: keys-from-scratch
+Type: cpu
+Time: Jul 14, 2019 at 5:48pm (CDT)
+Duration: 5.60s, Total samples = 5.40s (96.35%)
+Showing nodes accounting for 5.34s, 98.89% of 5.40s total
+Dropped 33 nodes (cum <= 0.03s)
+      flat  flat%   sum%        cum   cum%
+     4.20s 77.78% 77.78%      4.20s 77.78%  math/big.addMulVVW
+     0.85s 15.74% 93.52%      5.31s 98.33%  math/big.nat.montgomery
+     0.27s  5.00% 98.52%      0.27s  5.00%  runtime.memclrNoHeapPointers
+     0.02s  0.37% 98.89%      0.03s  0.56%  math/big.nat.divLarge
+         0     0% 98.89%      5.38s 99.63%  crypto/rand.Prime
+         0     0% 98.89%      5.38s 99.63%  crypto/rsa.GenerateKey
+         0     0% 98.89%      5.38s 99.63%  crypto/rsa.GenerateMultiPrimeKey
+         0     0% 98.89%      5.39s 99.81%  golang.org/x/crypto/openpgp.NewEntity
+         0     0% 98.89%      5.39s 99.81%  main.generateEntity
+         0     0% 98.89%      5.39s 99.81%  main.main
+         0     0% 98.89%      5.38s 99.63%  math/big.(*Int).ProbablyPrime
+         0     0% 98.89%      0.03s  0.56%  math/big.basicSqr
+         0     0% 98.89%      0.27s  5.00%  math/big.nat.clear
+         0     0% 98.89%      0.03s  0.56%  math/big.nat.div
+         0     0% 98.89%      5.31s 98.33%  math/big.nat.expNN
+         0     0% 98.89%      5.31s 98.33%  math/big.nat.expNNMontgomery
+         0     0% 98.89%      0.06s  1.11%  math/big.nat.probablyPrimeLucas
+         0     0% 98.89%      5.32s 98.52%  math/big.nat.probablyPrimeMillerRabin
+         0     0% 98.89%      0.03s  0.56%  math/big.nat.sqr
+         0     0% 98.89%      5.39s 99.81%  runtime.main
+```
+I like doing things via the CLI. For visual readers, I also [generated a PNG](/keys-from-scratch/debug.png). It's massive.
+```console
+$ go tool pprof  --png ./keys-from-scratch ./cpu.pprof > debug.png
+```
+Let's break down what this is saying.
+
+* `Duration: 5.60s, Total samples = 5.40s (96.35%)`: The samples Go tool cover the solid majority of the execution so we can be fairly certain the issue is covered here.
+* `Showing nodes accounting for 5.34s, 98.89% of 5.40s total`: Go's showing us the important stuff that covers our window of interest. There are some things it's not showing us but that's okay.
+* The `flat` column shows us how much time was spent at each node.
+* The `cum` column, while out of order, shows us the acculumated time at each node.
+
+You can use other outputs, such as the tree or a graph, to get a visual path through the process. I really like `--tree`, which is much larger and visual, `--text` seemed like the best option for a quick overview (although if you scroll to the end of this doc you'll find my absolute favorite).
+
+This not-so-little guy seems to be the problem.
+```console
+$ go tool pprof  --text --compact_labels --show 'addMulVVW' ./keys-from-scratch ./cpu.pprof
+Active filters:
+   show=addMulVVW
+Showing nodes accounting for 4.20s, 77.78% of 5.40s total
+      flat  flat%   sum%        cum   cum%
+     4.20s 77.78% 77.78%      4.20s 77.78%  math/big.addMulVVW
+
+$ ./keys-from-scratch >/dev/null 2>&1 && go tool pprof  --text --compact_labels --show 'addMulVVW' ./keys-from-scratch ./cpu.pprof
+Active filters:
+   show=addMulVVW
+Showing nodes accounting for 3.96s, 72.13% of 5.49s total
+      flat  flat%   sum%        cum   cum%
+     3.96s 72.13% 72.13%      3.96s 72.13%  math/big.addMulVVW
+
+$ ./keys-from-scratch >/dev/null 2>&1 && go tool pprof  --text --compact_labels --show 'addMulVVW' ./keys-from-scratch ./cpu.pprof
+Active filters:
+   show=addMulVVW
+Showing nodes accounting for 3.52s, 75.70% of 4.65s total
+      flat  flat%   sum%        cum   cum%
+     3.52s 75.70% 75.70%      3.52s 75.70%  math/big.addMulVVW
+```
+It's sitting at a fairly stable 75%. It's not the whole issue but it seems to be most of it.
+```console
+# lowered to 2048 bits
+$ go build && ./keys-from-scratch >/dev/null 2>&1 && go tool pprof  --text --compact_labels --show 'addMulVVW' ./keys-from-scratch ./cpu.pprof
+Active filters:
+   show=addMulVVW
+Showing nodes accounting for 370ms, 67.27% of 550ms total
+      flat  flat%   sum%        cum   cum%
+     370ms 67.27% 67.27%      370ms 67.27%  math/big.addMulVVW
+
+# dropped to SHA256
+$ go build && ./keys-from-scratch >/dev/null 2>&1 && go tool pprof  --text --compact_labels --show 'addMulVVW' ./keys-from-scratch ./cpu.pprof
+Active filters:
+   show=addMulVVW
+Showing nodes accounting for 140ms, 60.87% of 230m**s total
+      flat  flat%   sum%        cum   cum%
+     140ms 60.87% 60.87%      140ms 60.87%  math/big.addMulVVW
+
+# bumped cipher up to AES258
+$ go build && ./keys-from-scratch >/dev/null 2>&1 && go tool pprof  --text --compact_labels --show 'addMulVVW' ./keys-from-scratch ./cpu.pprof
+Active filters:
+   show=addMulVVW
+Showing nodes accounting for 160ms, 61.54% of 260ms total
+      flat  flat%   sum%        cum   cum%
+     160ms 61.54% 61.54%      160ms 61.54%  math/big.addMulVVW
+
+# bumped hash up to SHA512
+$ go build && ./keys-from-scratch >/dev/null 2>&1 && go tool pprof  --text --compact_labels --show 'addMulVVW' ./keys-from-scratch ./cpu.pprof
+Active filters:
+   show=addMulVVW
+Showing nodes accounting for 80ms, 80.00% of 100ms total
+      flat  flat%   sum%        cum   cum%
+      80ms 80.00% 80.00%       80ms 80.00%  math/big.addMulVVW
+
+```
+
+
+
+## `pprof` Easter Egg
+I moved this to the end so it wouldn't be bothersome to people using Markdown renderers that don't parse HTML. I think it's hilarious and I'm going to try to use [`graph-easy`](https://github.com/ironcamel/Graph-Easy) everywhere now.
+
+<details>
+<summary>You might find this obnoxious but I love it</summary>
+<p>
+
+```console
+$ go tool pprof --dot ./keys-from-scratch ./cpu.pprof | graph-easy --ascii
+                                                                + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+                                                                '                           cluster_L                           '
+                                                                '                                                               '
+                                                                ' +-----------------------------------------------------------+ '
+                                                                ' |                  File: keys-from-scratch                  | '
+                                                                ' | Type: cpu                                                 | '
+                                                                ' | Time: Jul 14, 2019 at 5:48pm (CDT)                        | '
+                                                                ' | Duration: 5.60s, Total samples = 5.40s (96.35%)           | '
+                                                                ' | Showing nodes accounting for 5.34s, 98.89% of 5.40s total | '
+                                                                ' | Dropped 33 nodes (cum <= 0.03s)                           | '
+                                                                ' +-----------------------------------------------------------+ '
+                                                                '                                                               '
+                                                                + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+                                                                  +-----------------------------------------------------------+
+                                                                  |                          runtime                          |
+                                                                  |                           main                            |
+                                                                  |                    0 of 5.39s (99.81%)                    |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 5.39s
+                                                                    v
+                                                                  +-----------------------------------------------------------+
+                                                                  |                           main                            |
+                                                                  |                           main                            |
+                                                                  |                    0 of 5.39s (99.81%)                    |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 5.39s
+                                                                    v
+                                                                  +-----------------------------------------------------------+
+                                                                  |                           main                            |
+                                                                  |                      generateEntity                       |
+                                                                  |                    0 of 5.39s (99.81%)                    |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 5.39s
+                                                                    v
+                                                                  +-----------------------------------------------------------+
+                                                                  |                          openpgp                          |
+                                                                  |                         NewEntity                         |
+                                                                  |                    0 of 5.39s (99.81%)                    |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 5.38s
+                                                                    v
+                                                                  +-----------------------------------------------------------+
+                                                                  |                            rsa                            |
+                                                                  |                        GenerateKey                        |
+                                                                  |                    0 of 5.38s (99.63%)                    |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 5.38s
+                                                                    v
+                                                                  +-----------------------------------------------------------+
+                                                                  |                            rsa                            |
+                                                                  |                   GenerateMultiPrimeKey                   |
+                                                                  |                    0 of 5.38s (99.63%)                    |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 5.38s
+                                                                    v
+                                                                  +-----------------------------------------------------------+
+                                                                  |                           rand                            |
+                                                                  |                           Prime                           |
+                                                                  |                    0 of 5.38s (99.63%)                    |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 5.38s
+                                                                    v
++--------------------+          +--------------------+            +-----------------------------------------------------------+
+|        big         |          |        big         |            |                            big                            |
+|        nat         |          |        nat         |            |                          (*Int)                           |
+|        div         |  0.03s   | probablyPrimeLucas |  0.06s     |                       ProbablyPrime                       |
+| 0 of 0.03s (0.56%) | <------- | 0 of 0.06s (1.11%) | <-------   |                    0 of 5.38s (99.63%)                    |
++--------------------+          +--------------------+            +-----------------------------------------------------------+
+  |                               |                                 |
+  | 0.03s                         | 0.03s                           | 5.32s
+  v                               v                                 v
++--------------------+          +--------------------+            +-----------------------------------------------------------+
+|        big         |          |        big         |            |                            big                            |
+|        nat         |          |        nat         |            |                            nat                            |
+|      divLarge      |          |        sqr         |            |                 probablyPrimeMillerRabin                  |
+|   0.02s (0.37%)    |          | 0 of 0.03s (0.56%) |            |                    0 of 5.32s (98.52%)                    |
+|  of 0.03s (0.56%)  |          |                    |            |                                                           |
++--------------------+          +--------------------+            +-----------------------------------------------------------+
+                                  |                                 |
+                                  | 0.03s                           | 5.30s
+                                  v                                 v
+                                +--------------------+            +-----------------------------------------------------------+
+                                |        big         |            |                            big                            |
+                                |      basicSqr      |            |                            nat                            |
+                                | 0 of 0.03s (0.56%) |            |                           expNN                           |
+                                |                    |            |                    0 of 5.31s (98.33%)                    |
+                                +--------------------+            +-----------------------------------------------------------+
+                                  |                                 |
+                                  | 0.03s                           | 5.31s
+                                  v                                 v
+                                +--------------------+            +-----------------------------------------------------------+
+                                |        big         |            |                            big                            |
+                                |     addMulVVW      |            |                            nat                            |
+                                |   4.20s (77.78%)   |            |                      expNNMontgomery                      |
+                                |                    |            |                    0 of 5.31s (98.33%)                    |
+                                +--------------------+            +-----------------------------------------------------------+
+                                  ^                                 |
+                                  |                                 | 5.31s
+                                  |                                 v
+                                  |                               +-----------------------------------------------------------+
+                                  |                               |                            big                            |
+                                  |                               |                            nat                            |
+                                  |                               |                        montgomery                         |
+                                  |                    4.17s      |                      0.85s (15.74%)                       |
+                                  +----------------------------   |                     of 5.31s (98.33%)                     |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 0.27s
+                                                                    v
+                                                                  +-----------------------------------------------------------+
+                                                                  |                            big                            |
+                                                                  |                            nat                            |
+                                                                  |                           clear                           |
+                                                                  |                    0 of 0.27s (5.00%)                     |
+                                                                  +-----------------------------------------------------------+
+                                                                    |
+                                                                    | 0.27s
+                                                                    v
+                                                                  +-----------------------------------------------------------+
+                                                                  |                          runtime                          |
+                                                                  |                   memclrNoHeapPointers                    |
+                                                                  |                       0.27s (5.00%)                       |
+                                                                  +-----------------------------------------------------------+
+```
+</p>
+</detail>
