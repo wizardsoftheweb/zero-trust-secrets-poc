@@ -1,5 +1,7 @@
 # Zero Trust Secrets
 
+**NOTE:** This is a very pretty cover page. Scope what's actively happening [in the docs](/docs/poc).
+
 The goal of this project is to combine a bunch of really neat stuff into a broke dev's security at rest solution.
 
 ## Very Important Caveat
